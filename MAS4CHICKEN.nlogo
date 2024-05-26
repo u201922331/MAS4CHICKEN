@@ -6,6 +6,11 @@ clients-own [waiting-time waiting-threshold served satisfaction]
 waiters-own [chef-id client-id]
 chefs-own [food-ready]
 
+globals [
+  mesas-patches
+  polleria-patches
+  cocina-patches
+]
 to setup
   clear-all
   set-default-shape clients "person"
@@ -35,14 +40,16 @@ to setup
     set color yellow
     set food-ready false
   ]
+  ;; Crear la polleria patches
+  set polleria-patches patches with [pxcor >= min-pxcor and pycor >= 0]
+  ask polleria-patches [set pcolor yellow]
+  ;; Crear las mesas.patches
+  set mesas-patches patches with [(pycor = 2 or pycor = 6) and (remainder pxcor 2 = 0) and pxcor < 0 and pxcor > min-pxcor]
+  ask mesas-patches [set pcolor brown]
+  ;; Crear la cocina-patches
+  set cocina-patches patches with [pycor < 0]
+  ask cocina-patches [set pcolor gray]
 
-  ask patches [
-    ifelse remainder pxcor 2 = 0 [
-      ifelse remainder pycor 2 = 0 [set pcolor gray] [set pcolor black]
-    ] [
-      ifelse remainder pycor 2 = 0 [set pcolor black] [set pcolor gray]
-    ]
-  ]
 
   reset-ticks
 end
@@ -146,6 +153,36 @@ NIL
 NIL
 NIL
 NIL
+1
+
+TEXTBOX
+57
+157
+207
+175
+Zona de mesas
+14
+0.0
+1
+
+TEXTBOX
+63
+410
+213
+428
+Cocina
+14
+0.0
+1
+
+TEXTBOX
+352
+159
+502
+177
+Entrada de comensales
+14
+0.0
 1
 
 @#$#@#$#@
