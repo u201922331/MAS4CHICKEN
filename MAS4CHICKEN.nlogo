@@ -1,9 +1,11 @@
+extensions [ nw ]
 breed [clients client]
 breed [waiters waiter]
 breed [chefs chef]
+breed [nodes node]
 
 clients-own [waiting-time waiting-threshold served satisfaction]
-waiters-own [chef-id client-id]
+waiters-own [chef-id client-id location path orders]
 chefs-own [food-ready]
 
 globals [
@@ -53,9 +55,40 @@ to setup
   set-default-shape waiters "person"
   set-default-shape chefs "person"
 
-  set CLIENTES  max list 1 CLIENTES
-  set MESEROS   max list 1 MESEROS
-  set COCINEROS max list 1 COCINEROS
+  ;; Libreria nw
+  create-nodes 5
+  ask node 0 [
+    set xcor 0
+    set ycor 0
+  ]
+  ask node 1 [
+    set xcor 2
+    set ycor 2
+    create-link-with node 0
+  ]
+  ask node 2 [
+    set xcor 4
+    set ycor 4
+    create-link-with node 1
+  ]
+  ask node 3 [
+    set xcor 6
+    set ycor 6
+    create-link-with node 2
+  ]
+  ask node 4 [
+    set xcor 8
+    set ycor 8
+    create-link-with node 3
+  ]
+  ask nodes [
+    set shape "circle"
+    set size 1
+    ;;set label who
+  ]
+  ;;set CLIENTES  max list 1 CLIENTES
+  ;;set MESEROS   max list 1 MESEROS
+  ;;set COCINEROS max list 1 COCINEROS
 
   create-clients CLIENTES [
     setxy random-xcor random-ycor
@@ -66,10 +99,13 @@ to setup
     set satisfaction 3
   ]
   create-waiters MESEROS [
-    setxy random-xcor random-ycor
-    set color cyan
-    set chef-id 0
-    set client-id 0
+    set xcor 0
+    set ycor 0
+    set shape "person"
+    set size 2
+    set location one-of nodes
+    set path []
+    set label orders
   ]
   create-chefs COCINEROS [
     setxy random-xcor random-ycor
@@ -86,7 +122,6 @@ to setup
   set cocina-patches patches with [pycor < 0]
   ask cocina-patches [set pcolor gray]
 
-
   reset-ticks
 end
 
@@ -94,7 +129,38 @@ to go
   ask clients [
     if not served [set waiting-time waiting-time + 1]
   ]
+  ask waiters [
+    let new-location 0
+    ifelse empty? path
+    [set new-location one-of [link-neighbors] of location]
+    [
+      let p first path
+      set new-location p
+      set path remove p path
+    ]
+    ;;face new-location
+    move-to new-location
+    set location new-location
+  ]
   tick
+end
+
+to create-path
+  let w one-of sort-by [[a b] -> [ orders ] of a > [ orders ] of b ] waiters
+  ask w [
+    set orders orders + 1
+    set label orders
+    set path path-from-to node 0 node 4
+    show path-from-to node 4 node 0
+  ]
+end
+
+to-report path-from-to [source target]
+  let p []
+  ask source [
+    set p nw:turtles-on-path-to target
+  ]
+  report p
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -141,7 +207,7 @@ INPUTBOX
 350
 99
 Meseros
-4.0
+2.0
 1
 0
 Number
@@ -228,6 +294,23 @@ BUTTON
 139
 Cargar Mapa
 loadMap
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+122
+106
+230
+139
+Nuevo pedido
+create-path
 NIL
 1
 T
