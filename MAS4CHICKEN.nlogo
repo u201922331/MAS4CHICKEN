@@ -12,8 +12,10 @@ globals [
   mesas-patches
   polleria-patches
   cocina-patches
-
   patch-data
+  cocina-node
+  mesa-node
+  entrada-node
 ]
 
 to loadMap
@@ -51,40 +53,38 @@ end
 
 to setup
   clear-all
+
+  ;; Crear la polleria patches
+  set polleria-patches patches with [pxcor >= min-pxcor and pycor >= 0]
+  ask polleria-patches [set pcolor yellow]
+  ;; Crear las mesas.patches
+  set mesas-patches patches with [(pycor = 2 or pycor = 6) and (remainder pxcor 2 = 0) and pxcor < 0 and pxcor > min-pxcor]
+  ask mesas-patches [set pcolor brown]
+  ;; Crear la cocina-patches
+  set cocina-patches patches with [pycor < 0]
+  ask cocina-patches [set pcolor gray]
+
+
   set-default-shape clients "person"
   set-default-shape waiters "person"
   set-default-shape chefs "person"
 
   ;; Libreria nw
-  create-nodes 5
-  ask node 0 [
-    set xcor 0
-    set ycor 0
-  ]
-  ask node 1 [
-    set xcor 2
-    set ycor 2
-    create-link-with node 0
-  ]
-  ask node 2 [
-    set xcor 4
-    set ycor 4
-    create-link-with node 1
-  ]
-  ask node 3 [
-    set xcor 6
-    set ycor 6
-    create-link-with node 2
-  ]
-  ask node 4 [
-    set xcor 8
-    set ycor 8
-    create-link-with node 3
-  ]
+  ask patches [ sprout-nodes 1]
+  ask nodes [ create-links-with nodes-on neighbors]
+
   ask nodes [
-    set shape "circle"
-    set size 1
+    set hidden? true
+    ;;set shape "dot"
+    ;;set size 1
     ;;set label who
+
+  ]
+
+  ask patch 0 0 [
+    set entrada-node one-of nodes-at 5 5
+    set mesa-node one-of nodes-at -5 5
+    set cocina-node one-of nodes-at 5 -5
   ]
   ;;set CLIENTES  max list 1 CLIENTES
   ;;set MESEROS   max list 1 MESEROS
@@ -99,11 +99,10 @@ to setup
     set satisfaction 3
   ]
   create-waiters MESEROS [
-    set xcor 0
-    set ycor 0
-    set shape "person"
-    set size 2
-    set location one-of nodes
+    set shape "default"
+    set location mesa-node
+    show location
+    move-to location
     set path []
     set label orders
   ]
@@ -112,46 +111,68 @@ to setup
     set color yellow
     set food-ready false
   ]
-  ;; Crear la polleria patches
-  set polleria-patches patches with [pxcor >= min-pxcor and pycor >= 0]
-  ask polleria-patches [set pcolor yellow]
-  ;; Crear las mesas.patches
-  set mesas-patches patches with [(pycor = 2 or pycor = 6) and (remainder pxcor 2 = 0) and pxcor < 0 and pxcor > min-pxcor]
-  ask mesas-patches [set pcolor brown]
-  ;; Crear la cocina-patches
-  set cocina-patches patches with [pycor < 0]
-  ask cocina-patches [set pcolor gray]
-
   reset-ticks
 end
 
 to go
+  if remainder ticks 20 = 0 [
+    show "creando un cliente"
+  ]
   ask clients [
     if not served [set waiting-time waiting-time + 1]
   ]
   ask waiters [
     let new-location 0
     ifelse empty? path
-    [set new-location one-of [link-neighbors] of location]
+    [
+      set new-location one-of [link-neighbors] of location
+      move-to new-location
+      set location new-location
+    ]
     [
       let p first path
-      set new-location p
-      set path remove p path
+      show p
+      show path
+      ifelse is-list? p
+      [
+        let l one-of p
+        set new-location l
+        set path remove-item 0 path
+        move-to new-location
+        set location new-location
+      ]
+      [
+        set new-location p
+        set path remove-item 0 path
+        move-to new-location
+        set location new-location
+      ]
     ]
-    ;;face new-location
-    move-to new-location
-    set location new-location
   ]
   tick
 end
 
 to create-path
-  let w one-of sort-by [[a b] -> [ orders ] of a > [ orders ] of b ] waiters
+  let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
   ask w [
     set orders orders + 1
     set label orders
-    set path path-from-to node 0 node 4
-    show path-from-to node 4 node 0
+    let pos one-of nodes-here
+
+    let path1 path-from-to pos mesa-node
+    foreach path1 [x -> set path lput x path]
+    show path1
+    show path
+
+    let path2 path-from-to mesa-node cocina-node
+    foreach path2 [x -> set path lput x path]
+    show path2
+    show path
+
+    let path3 path-from-to cocina-node mesa-node
+    foreach path3 [x -> set path lput x path]
+    show path3
+    show path
   ]
 end
 
@@ -177,15 +198,15 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 -8
 8
 -8
 8
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -207,7 +228,7 @@ INPUTBOX
 350
 99
 Meseros
-2.0
+6.0
 1
 0
 Number
