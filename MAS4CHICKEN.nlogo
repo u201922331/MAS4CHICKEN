@@ -1,4 +1,5 @@
 extensions [ nw ]
+
 breed [clients client]
 breed [waiters waiter]
 breed [chefs chef]
@@ -9,14 +10,17 @@ waiters-own [chef-id client-id location path orders]
 chefs-own [food-time]
 
 globals [
-  mesas-patches
-  horno-patches
+  ;; Info general de las parcelas
+  patch-data
+  ;; Parcelas específicas
   polleria-patches
   cocina-patches
-  patch-data
-  cocina-node
+  mesas-patches
+  ;; Nodos
   mesa-node
+  cocina-node
   entrada-node
+  ;; Misceláneos
   total-waiting-time
 ]
 
@@ -30,7 +34,8 @@ to loadMap
     while [not file-at-end?] [
       set patch-data sentence patch-data (list(list file-read file-read file-read))
     ]
-    user-message "¡Archivo cargado!"
+
+    user-message "¡Mapa cargado exitosamente!"
     file-close
   ]
 end
@@ -38,45 +43,34 @@ end
 to showMap
   clear-patches
   clear-turtles
+
   ifelse (is-list? patch-data) [
-    foreach patch-data [
-      three-tuple -> ask patch first three-tuple item 1 three-tuple [
-        ifelse (last three-tuple = 1) [
-          set pcolor black
-        ] [
-          set pcolor white
-        ]
-      ]
+    foreach patch-data [ three-tuple ->
+      ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
     ]
   ] [
-    user-message "ALERTA: Se requiere haber cargado el mapa."
+    user-message "AVISO: Se requiere haber cargado el mapa."
   ]
+
+  display
 end
 
 to setup
   clear-all
+  loadMap
+  showMap
 
-  ;; Crear la polleria patches
-  set polleria-patches patches with [pxcor >= min-pxcor and pycor >= 0]
-  ask polleria-patches [set pcolor yellow]
-  ;; Crear las mesas.patches
-  set mesas-patches patches with [(pycor = 2 or pycor = 6) and (remainder pxcor 2 = 0) and pxcor < 0 and pxcor > min-pxcor]
-  ask mesas-patches [set pcolor brown]
+  set MESEROS   max list 1 MESEROS
+  set COCINEROS max list 1 COCINEROS
 
-  ;; Crear las horno patches
-  set horno-patches patches with [(pycor = -6) and (remainder pxcor 2 = 0) and pxcor > 0 and pxcor < max-pxcor]
-  ask mesas-patches [set pcolor black]
-
-  ;; Crear la cocina-patches
-  set cocina-patches patches with [pycor < 0]
-  ask cocina-patches [set pcolor 8]
-
+  set polleria-patches patches with [pcolor = yellow]
+  set mesas-patches patches with [pcolor = brown]
+  set cocina-patches patches with [pcolor = gray]
 
   set-default-shape clients "person"
   set-default-shape waiters "person"
   set-default-shape chefs "person"
 
-  ;; Libreria nw
   ask patches [ sprout-nodes 1]
   ask nodes [ create-links-with nodes-on neighbors]
 
@@ -85,7 +79,6 @@ to setup
     ;;set shape "dot"
     ;;set size 1
     ;;set label who
-
   ]
 
   ask patch 0 0 [
@@ -93,20 +86,8 @@ to setup
     set mesa-node one-of nodes-at -5 5
     set cocina-node one-of nodes-at 5 -5
   ]
-  ;;set CLIENTES  max list 1 CLIENTES
-  ;;set MESEROS   max list 1 MESEROS
-  ;;set COCINEROS max list 1 COCINEROS
 
-  ;;create-clients CLIENTES [
-    ;;setxy random-xcor random-ycor
-    ;;set color white
-    ;;set waiting-time 0
-    ;;set waiting-threshold (random 15) + 15
-    ;;set served false
-    ;;set satisfaction 3
-  ;;]
   create-waiters MESEROS [
-    set shape "person"
     set color 123
     set location mesa-node
     show location
@@ -136,12 +117,9 @@ to setup
     set color magenta
     set label food-time
   ]
-  ;;create-chefs COCINEROS [
-    ;;setxy random-xcor random-ycor
-    ;;set color yellow
-    ;;set food-ready false
-  ;;]
+
   set total-waiting-time []
+
   reset-ticks
 end
 
@@ -234,65 +212,115 @@ to-report path-from-to [source target]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-34
-144
-510
-621
+40
+156
+373
+490
 -1
 -1
-27.53
+13.0
 1
 10
 1
 1
 1
 0
+1
+1
+1
+-12
+12
+-12
+12
 0
 0
-1
--8
-8
--8
-8
-1
-1
 1
 ticks
 30.0
 
 INPUTBOX
-195
-39
-350
-99
+42
+50
+134
+110
 Meseros
 4.0
 1
 0
 Number
 
-BUTTON
-439
-106
-511
-139
-Simular
-go
-T
+INPUTBOX
+138
+50
+230
+110
+Cocineros
+4.0
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
+0
+Number
+
+SLIDER
+396
+43
+568
+76
+CHEF1
+CHEF1
+0
+100
+8.0
 1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+391
+88
+563
+121
+CHEF2
+CHEF2
+0
+100
+13.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+390
+129
+562
+162
+CHEF3
+CHEF3
+0
+100
+8.0
+1
+1
+NIL
+HORIZONTAL
+
+INPUTBOX
+237
+50
+332
+110
+Intervalo-Clientes
+20.0
+1
+0
+Number
 
 BUTTON
-347
-106
-434
-139
+417
+209
+498
+242
 Inicializar
 setup
 NIL
@@ -305,44 +333,14 @@ NIL
 NIL
 1
 
-TEXTBOX
-55
-155
-205
-173
-Zona de mesas
-14
-0.0
-1
-
-TEXTBOX
-63
-410
-213
-428
-Cocina
-14
-0.0
-1
-
-TEXTBOX
-352
-159
-502
-177
-Entrada de comensales
-14
-0.0
-1
-
 BUTTON
-239
-106
-339
-139
-Cargar Mapa
-loadMap
-NIL
+417
+259
+489
+292
+Simular
+go
+T
 1
 T
 OBSERVER
@@ -352,81 +350,25 @@ NIL
 NIL
 1
 
-SLIDER
-359
-10
-531
-43
-CHEF1
-CHEF1
-0
-100
-4.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-358
-43
-530
-76
-CHEF2
-CHEF2
-0
-100
-10.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-359
-74
-531
-107
-CHEF3
-CHEF3
-0
-100
-9.0
-1
-1
-NIL
-HORIZONTAL
-
-INPUTBOX
-37
-40
-192
-101
-INTERVALO-CLIENTES
-20.0
-1
-0
-Number
-
 MONITOR
-525
-151
-690
-196
+419
+313
+589
+358
 Tiempo promedio de espera
 mean total-waiting-time
-17
+5
 1
 11
 
 PLOT
-526
-220
-915
-370
-Trabajo total  por tiempo transcurrido
-tiempo
-trabajo total
+417
+373
+617
+523
+Trabajo total por tiempo transcurrido
+Tiempo
+Trabajo total
 0.0
 10.0
 0.0

@@ -7,11 +7,11 @@
 
 struct TileInfo {
     int x, y;
-    int id;
+    float color;
 };
 
 std::ostream& operator<<(std::ostream& o, TileInfo t) {
-    o << '(' << t.x << ", " << t.y << ", " << t.id << ')';
+    o << '(' << t.x << ", " << t.y << ", " << t.color << ')';
     return o;
 }
 
@@ -41,7 +41,18 @@ std::pair<std::vector<std::vector<TileInfo>>, bool> loadMap(const std::string& p
             temp.push_back(std::vector<TileInfo>());
             int j = 0;
             for (const char& c : line) {
-                temp[i].push_back({(1 - w) / 2 + j, (h - 1) / 2 - i, c == ' ' ? 0 : (c == '#' ? 1 : (c == '.' ? 2 : (c == '=' ? 3 : 4)))});
+                /*
+                ' ' -> 45 // Yellow
+                '#' ->  0 // Black
+                '.' ->  5 // Gray
+                '=' -> 35 // Brown
+                '*' -> 65 // Green
+                */
+                temp[i].push_back({
+                    (1 - w) / 2 + j,
+                    (h - 1) / 2 - i,
+                    c == ' ' ? 45.0f : (c == '#' ? 0.0f : (c == '.' ? 5.0f : (c == '=' ? 35.0f : 65.0f)))
+                });
                 j++;
             }
             i++;
@@ -61,7 +72,7 @@ void saveMap(const std::string& path, std::vector<std::vector<TileInfo>> map) {
     if (!file.fail()) {
         for (const auto& row : map) {
             for (const auto& patch : row) {
-                file << ' ' << patch.x << ' ' << patch.y << ' ' << patch.id;
+                file << ' ' << patch.x << ' ' << patch.y << ' ' << patch.color;
             }
         }
         std::cout << "NetLogo-readable generated at: " << path << '\n';
