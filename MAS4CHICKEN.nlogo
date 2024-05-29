@@ -6,16 +6,18 @@ breed [nodes node]
 
 clients-own [waiting-time waiting-threshold served satisfaction]
 waiters-own [chef-id client-id location path orders]
-chefs-own [food-ready]
+chefs-own [food-time]
 
 globals [
   mesas-patches
+  horno-patches
   polleria-patches
   cocina-patches
   patch-data
   cocina-node
   mesa-node
   entrada-node
+  total-waiting-time
 ]
 
 to loadMap
@@ -60,9 +62,14 @@ to setup
   ;; Crear las mesas.patches
   set mesas-patches patches with [(pycor = 2 or pycor = 6) and (remainder pxcor 2 = 0) and pxcor < 0 and pxcor > min-pxcor]
   ask mesas-patches [set pcolor brown]
+
+  ;; Crear las horno patches
+  set horno-patches patches with [(pycor = -6) and (remainder pxcor 2 = 0) and pxcor > 0 and pxcor < max-pxcor]
+  ask mesas-patches [set pcolor black]
+
   ;; Crear la cocina-patches
   set cocina-patches patches with [pycor < 0]
-  ask cocina-patches [set pcolor gray]
+  ask cocina-patches [set pcolor 8]
 
 
   set-default-shape clients "person"
@@ -90,37 +97,98 @@ to setup
   ;;set MESEROS   max list 1 MESEROS
   ;;set COCINEROS max list 1 COCINEROS
 
-  create-clients CLIENTES [
-    setxy random-xcor random-ycor
-    set color white
-    set waiting-time 0
-    set waiting-threshold (random 15) + 15
-    set served false
-    set satisfaction 3
-  ]
+  ;;create-clients CLIENTES [
+    ;;setxy random-xcor random-ycor
+    ;;set color white
+    ;;set waiting-time 0
+    ;;set waiting-threshold (random 15) + 15
+    ;;set served false
+    ;;set satisfaction 3
+  ;;]
   create-waiters MESEROS [
-    set shape "default"
+    set shape "person"
+    set color 123
     set location mesa-node
     show location
     move-to location
     set path []
     set label orders
   ]
-  create-chefs COCINEROS [
-    setxy random-xcor random-ycor
-    set color yellow
-    set food-ready false
+
+  create-chefs 1 [
+    set xcor 2
+    set ycor -6
+    set food-time CHEF1
+    set color magenta
+    set label food-time
   ]
+  create-chefs 1 [
+    set xcor 4
+    set ycor -6
+    set food-time CHEF2
+    set color magenta
+    set label food-time
+  ]
+  create-chefs 1 [
+    set xcor 6
+    set ycor -6
+    set food-time CHEF3
+    set color magenta
+    set label food-time
+  ]
+  ;;create-chefs COCINEROS [
+    ;;setxy random-xcor random-ycor
+    ;;set color yellow
+    ;;set food-ready false
+  ;;]
+  set total-waiting-time []
   reset-ticks
 end
 
 to go
-  if remainder ticks 20 = 0 [
-    show "creando un cliente"
+  if remainder ticks INTERVALO-CLIENTES = 0 [
+    ask one-of mesas-patches [
+      let posclient one-of nodes-here
+      let length-wait 0
+
+      let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
+      ask w [
+        set orders orders + 1
+        set label orders
+        let poswaiter one-of nodes-here
+        let poschef 0
+        let time-to-prepare 0
+        let c one-of chefs
+        ask c [
+          set poschef one-of nodes-here
+          set time-to-prepare food-time
+        ]
+
+        let path1 path-from-to poswaiter posclient
+        foreach path1 [x -> set path lput x path]
+
+        let path2 path-from-to posclient poschef
+        foreach path2 [x -> set path lput x path]
+
+        foreach range time-to-prepare [x -> set path lput poschef path]
+
+        let path3 path-from-to poschef posclient
+        foreach path3 [x -> set path lput x path]
+
+        set length-wait length path
+        set total-waiting-time lput length path total-waiting-time
+      ]
+
+      sprout-clients 1
+      [
+        set waiting-time length-wait
+        set color blue
+      ]
+    ]
   ]
-  ask clients [
-    if not served [set waiting-time waiting-time + 1]
-  ]
+  ;;ask clients [
+  ;;  if not served [set waiting-time waiting-time + 1]
+  ;;]
   ask waiters [
     let new-location 0
     ifelse empty? path
@@ -149,31 +217,12 @@ to go
       ]
     ]
   ]
-  tick
-end
-
-to create-path
-  let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
-  ask w [
-    set orders orders + 1
-    set label orders
-    let pos one-of nodes-here
-
-    let path1 path-from-to pos mesa-node
-    foreach path1 [x -> set path lput x path]
-    show path1
-    show path
-
-    let path2 path-from-to mesa-node cocina-node
-    foreach path2 [x -> set path lput x path]
-    show path2
-    show path
-
-    let path3 path-from-to cocina-node mesa-node
-    foreach path3 [x -> set path lput x path]
-    show path3
-    show path
+  ask clients [
+    set waiting-time waiting-time - 1
+    if waiting-time = 0 [ die ]
+    set label waiting-time
   ]
+  tick
 end
 
 to-report path-from-to [source target]
@@ -212,34 +261,12 @@ ticks
 30.0
 
 INPUTBOX
-36
-39
-191
-99
-Clientes
-20.0
-1
-0
-Number
-
-INPUTBOX
 195
 39
 350
 99
 Meseros
-6.0
-1
-0
-Number
-
-INPUTBOX
-356
-39
-511
-99
-Cocineros
-5.0
+4.0
 1
 0
 Number
@@ -325,22 +352,90 @@ NIL
 NIL
 1
 
-BUTTON
-122
-106
-230
-139
-Nuevo pedido
-create-path
-NIL
+SLIDER
+359
+10
+531
+43
+CHEF1
+CHEF1
+0
+100
+4.0
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
 1
+NIL
+HORIZONTAL
+
+SLIDER
+358
+43
+530
+76
+CHEF2
+CHEF2
+0
+100
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+359
+74
+531
+107
+CHEF3
+CHEF3
+0
+100
+9.0
+1
+1
+NIL
+HORIZONTAL
+
+INPUTBOX
+37
+40
+192
+101
+INTERVALO-CLIENTES
+20.0
+1
+0
+Number
+
+MONITOR
+525
+151
+690
+196
+Tiempo promedio de espera
+mean total-waiting-time
+17
+1
+11
+
+PLOT
+526
+220
+915
+370
+Trabajo total  por tiempo transcurrido
+tiempo
+trabajo total
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot sum [waiting-time] of clients"
 
 @#$#@#$#@
 ## WHAT IS IT?
