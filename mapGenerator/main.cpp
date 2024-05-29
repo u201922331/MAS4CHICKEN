@@ -15,6 +15,28 @@ std::ostream& operator<<(std::ostream& o, TileInfo t) {
     return o;
 }
 
+/*
+    ' ' -> 45 // Yellow
+    '#' ->  0 // Black
+    '.' ->  5 // Gray
+    '=' -> 35 // Brown
+    '*' -> 65 // Green
+    '@' -> 27 // Orange + 2
+    'C' ->  4 // Gray - 1
+*/
+float symbol2col(char c) {
+    switch (c) {
+    default:
+    case ' ': return 45.0f; // Restaurant
+    case '#': return  0.0f; // Walls
+    case '.': return  5.0f; // Staff
+    case '=': return 35.0f; // Tables
+    case '*': return 65.0f; // Outside
+    case '@': return 27.0f; // Client spawn
+    case 'C': return  4.0f; // Cook spawn
+    }
+}
+
 std::pair<std::vector<std::vector<TileInfo>>, bool> loadMap(const std::string& path) {
     std::vector<std::vector<TileInfo>> temp;
 
@@ -41,17 +63,10 @@ std::pair<std::vector<std::vector<TileInfo>>, bool> loadMap(const std::string& p
             temp.push_back(std::vector<TileInfo>());
             int j = 0;
             for (const char& c : line) {
-                /*
-                ' ' -> 45 // Yellow
-                '#' ->  0 // Black
-                '.' ->  5 // Gray
-                '=' -> 35 // Brown
-                '*' -> 65 // Green
-                */
                 temp[i].push_back({
                     (1 - w) / 2 + j,
                     (h - 1) / 2 - i,
-                    c == ' ' ? 45.0f : (c == '#' ? 0.0f : (c == '.' ? 5.0f : (c == '=' ? 35.0f : 65.0f)))
+                    symbol2col(c)
                 });
                 j++;
             }

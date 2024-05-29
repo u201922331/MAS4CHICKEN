@@ -108,9 +108,17 @@ to setup
 
   create-waiters MESEROS [
     set color 123
-    set location mesa-node
-    show location
-    move-to location
+    ; set location mesa-node
+    ; show location
+    ; move-to location
+    let c one-of staff-patches
+    set xcor [pxcor] of c
+    set ycor [pycor] of c
+
+    let new-location 0
+
+    ask c [  ]
+
     set path []
     set label orders
   ]
