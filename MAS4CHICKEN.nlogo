@@ -145,7 +145,7 @@ to setup
 end
 
 to go
-  if remainder ticks INTERVALO-CLIENTES = 0 [
+  if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [
     ask one-of mesas-patches [
       let posclient one-of nodes-here
       let length-wait 0
@@ -290,10 +290,10 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 100
-20.0
+5.0
 1
 1
-NIL
+min
 HORIZONTAL
 
 BUTTON
@@ -375,6 +375,17 @@ NIL
 NIL
 NIL
 1
+
+MONITOR
+42
+154
+125
+199
+Tiempo (min)
+ticks / 60
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
