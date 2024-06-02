@@ -1,4 +1,4 @@
-extensions [ nw ]
+extensions [ nw bitmap ]
 
 breed [clients client]
 breed [waiters waiter]
@@ -71,6 +71,9 @@ to showMap
 end
 
 to setup
+  let legend bitmap:import "leyenda.png"
+  bitmap:copy-to-drawing legend 180 0
+
   ask clients [die]
   ask waiters [die]
   ask chefs [die]
@@ -232,11 +235,11 @@ end
 GRAPHICS-WINDOW
 40
 156
-373
-490
+441
+558
 -1
 -1
-13.0
+15.72
 1
 10
 1
@@ -294,10 +297,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-417
-209
 498
-242
+211
+579
+244
 Inicializar
 setup
 NIL
@@ -311,10 +314,10 @@ NIL
 1
 
 BUTTON
-417
-259
-489
-292
+499
+260
+571
+293
 Simular
 go
 T
@@ -328,10 +331,10 @@ NIL
 1
 
 MONITOR
-419
-313
-589
-358
+500
+315
+670
+360
 Tiempo promedio de espera
 mean total-waiting-time
 5
@@ -339,10 +342,10 @@ mean total-waiting-time
 11
 
 PLOT
-417
-373
-617
-523
+498
+375
+698
+525
 Trabajo total por tiempo transcurrido
 Tiempo
 Trabajo total
@@ -357,10 +360,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot sum [waiting-time] of clients"
 
 BUTTON
-417
-165
-518
-198
+498
+167
+599
+200
 Cargar mapa
 loadMap
 NIL
@@ -719,6 +722,23 @@ NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>mean total-waiting-time</metric>
+    <enumeratedValueSet variable="Cocineros">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Meseros">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Clientes">
+      <value value="20"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
