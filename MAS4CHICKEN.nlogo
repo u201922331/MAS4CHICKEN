@@ -40,21 +40,32 @@ globals [
 ]
 
 to loadMap
-  clear-all
-
   let file user-file
+  set patch-data []
 
   if (file != false) [
-    set patch-data []
     file-open file
-
     while [not file-at-end?] [
       set patch-data sentence patch-data (list(list file-read file-read file-read))
     ]
 
     user-message "¡Mapa cargado exitosamente!"
     file-close
-    showMap
+  ]
+end
+
+to loaddefaultMap
+  let file "./mapGenerator/MAS4CHICKEN_map0.txt"
+  set patch-data []
+
+  if (file != false) [
+    file-open file
+    while [not file-at-end?] [
+      set patch-data sentence patch-data (list(list file-read file-read file-read))
+    ]
+
+    user-message "¡Mapa cargado exitosamente!"
+    file-close
   ]
 end
 
@@ -71,6 +82,20 @@ to showMap
 end
 
 to setup
+
+  ;;show patch-data
+  ifelse (patch-data = 0)
+  [;; cargar mapa por defecto
+    clear-all
+    loaddefaultMap
+    showMap
+    user-message "Mapa por defecto"
+  ]
+  [showMap]
+
+  reset-ticks
+  set total-waiting-time []
+
   let legend bitmap:import "leyenda.png"
   bitmap:copy-to-drawing legend 180 0
 
@@ -112,7 +137,7 @@ to setup
   create-waiters MESEROS [
     set color 123
 
-    show location
+    ;;show location
 
     set path []
     set label orders
@@ -127,8 +152,8 @@ to setup
 
   create-chefs COCINEROS [
     set color magenta
-    set food-time (random 25) + 5
-    set label food-time
+    set food-time ((random 10) + 20) * 60
+    set label food-time / 60
 
     let c one-of cocina-patches
     set xcor [pxcor] of c
@@ -139,9 +164,6 @@ to setup
 
   ask links [set color 7]
 
-  set total-waiting-time []
-
-  reset-ticks
 end
 
 to go
@@ -198,8 +220,8 @@ to go
     ]
     [
       let p first path
-      show p
-      show path
+      ;;show p
+      ;;show path
       ifelse is-list? p
       [
         let l one-of p
@@ -219,7 +241,8 @@ to go
   ask clients [
     set waiting-time waiting-time - 1
     if waiting-time = 0 [ die ]
-    set label waiting-time
+    set label precision (waiting-time / 60) 2
+    set label-color black
   ]
   tick
 end
@@ -230,6 +253,14 @@ to-report path-from-to [source target]
     set p nw:turtles-on-path-to target
   ]
   report p
+end
+
+to-report get-waiting-time
+  ifelse empty? total-waiting-time
+  [ report 0 ]
+  [ let totalsec mean total-waiting-time
+    report totalsec / 60
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -289,8 +320,8 @@ SLIDER
 Intervalo-Clientes
 Intervalo-Clientes
 0
-100
-5.0
+30
+2.0
 1
 1
 min
@@ -333,10 +364,10 @@ NIL
 MONITOR
 500
 315
-670
+696
 360
-Tiempo promedio de espera
-mean total-waiting-time
+Tiempo promedio de espera (min)
+get-waiting-time
 5
 1
 11
@@ -357,7 +388,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot sum [waiting-time] of clients"
+"default" 1.0 0 -16777216 true "" "plot (sum [waiting-time] of clients) / 60"
 
 BUTTON
 498
@@ -734,11 +765,11 @@ NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="5" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="10" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="1000"/>
-    <metric>mean total-waiting-time</metric>
+    <metric>get-waiting-time</metric>
     <enumeratedValueSet variable="Cocineros">
       <value value="4"/>
     </enumeratedValueSet>
