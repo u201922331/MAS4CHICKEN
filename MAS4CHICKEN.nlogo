@@ -10,10 +10,13 @@ clients-own [
   waiting-threshold
   served
   satisfaction
+  chef-id
+  food-ready
+  time-go
 ]
 waiters-own [
-  chef-id
-  client-id
+  ;chef-id
+  ;client-id
   location
   path
   orders
@@ -96,8 +99,11 @@ to setup
   reset-ticks
   set total-waiting-time []
 
-  let legend bitmap:import "leyenda.png"
-  bitmap:copy-to-drawing legend 180 0
+  let legend bitmap:import "leyenda3.png"
+  bitmap:copy-to-drawing legend 0 0
+
+  let LOGO bitmap:import "Logo MAS4CHICKEN3.png"
+  bitmap:copy-to-drawing LOGO 350 0
 
   ask clients [die]
   ask waiters [die]
@@ -117,6 +123,7 @@ to setup
   set-default-shape clients "person"
   set-default-shape waiters "person"
   set-default-shape chefs "person"
+  set-patch-size 20
 
   ask patches with [pcolor != 0] [ sprout-nodes 1]
   ask nodes [ create-links-with nodes-on neighbors]
@@ -136,11 +143,13 @@ to setup
 
   create-waiters MESEROS [
     set color 123
+    set size 2
 
     ;;show location
 
     set path []
     set label orders
+    set shape "waiter-icon"
 
     let c one-of staff-patches
     set xcor [pxcor] of c
@@ -152,8 +161,11 @@ to setup
 
   create-chefs COCINEROS [
     set color magenta
+    set size 2
     set food-time ((random 10) + 20) * 60
     set label food-time / 60
+    set label-color black
+    set shape "chef-icon"
 
     let c one-of cocina-patches
     set xcor [pxcor] of c
@@ -171,18 +183,20 @@ to go
     ask one-of mesas-patches [
       let posclient one-of nodes-here
       let length-wait 0
+      let poschef 0
 
       let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
       ask w [
         set orders orders + 1
         set label orders
+        set label-color black
         let poswaiter one-of nodes-here
-        let poschef 0
-        let time-to-prepare 0
+        let time-chef 0
+
         let c one-of chefs
         ask c [
           set poschef one-of nodes-here
-          set time-to-prepare food-time
+          set time-chef food-time
         ]
 
         let path1 path-from-to poswaiter posclient
@@ -191,19 +205,26 @@ to go
         let path2 path-from-to posclient poschef
         foreach path2 [x -> set path lput x path]
 
-        foreach range time-to-prepare [x -> set path lput poschef path]
+        ;;foreach range time-to-prepare [x -> set path lput poschef path]
 
-        let path3 path-from-to poschef posclient
-        foreach path3 [x -> set path lput x path]
+        ;;let path3 path-from-to poschef posclient
+        ;;foreach path3 [x -> set path lput x path]
 
-        set length-wait length path
-        set total-waiting-time lput length path total-waiting-time
+        set length-wait (length path + time-chef)
+
+        ;;set total-waiting-time lput length path total-waiting-time
       ]
 
       sprout-clients 1
       [
         set waiting-time length-wait
-        set color blue
+        set time-go length-wait
+        set color random 139
+        set shape "client-icon"
+        set size 2
+        set label-color black
+        set chef-id poschef
+        set food-ready false
       ]
     ]
   ]
@@ -240,7 +261,42 @@ to go
   ]
   ask clients [
     set waiting-time waiting-time - 1
-    if waiting-time = 0 [ die ]
+
+    if waiting-time = 0 [
+      ifelse food-ready = true [
+        die
+      ]
+      [
+        let poschef chef-id
+        let posclient one-of nodes-here
+        let length-wait 0
+
+        let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
+        ask w [
+          set orders orders + 1
+          set label orders
+          let poswaiter one-of nodes-here
+
+          let path1 path-from-to poswaiter poschef
+          foreach path1 [x -> set path lput x path]
+
+          let path2 path-from-to poschef posclient
+          foreach path2 [x -> set path lput x path]
+
+          ;;foreach range time-to-prepare [x -> set path lput poschef path]
+
+          ;;let path3 path-from-to poschef posclient
+          ;;foreach path3 [x -> set path lput x path]
+
+          set length-wait length path
+
+        ]
+        set total-waiting-time lput (length-wait + time-go) total-waiting-time
+        set waiting-time length-wait
+        set food-ready true
+      ]
+    ]
+
     set label precision (waiting-time / 60) 2
     set label-color black
   ]
@@ -262,23 +318,38 @@ to-report get-waiting-time
     report totalsec / 60
   ]
 end
+
+to-report get-hours
+  report floor (ticks / 3600)
+end
+
+to-report get-minutes
+  let h floor (ticks / 3600)
+  report floor ((ticks - h * 3600) / 60)
+end
+
+to-report get-seconds
+  let h floor (ticks / 3600)
+  let m floor ((ticks - h * 3600) / 60)
+  report ticks - (h * 3600) - (m * 60)
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-40
-156
-441
-558
+57
+177
+565
+686
 -1
 -1
-15.72
+20.0
 1
-10
+14
 1
 1
 1
 0
-1
-1
+0
+0
 1
 -12
 12
@@ -296,7 +367,7 @@ INPUTBOX
 134
 110
 Meseros
-4.0
+2.0
 1
 0
 Number
@@ -320,18 +391,18 @@ SLIDER
 Intervalo-Clientes
 Intervalo-Clientes
 0
-30
-2.0
-1
+10
+1.0
+0.1
 1
 min
 HORIZONTAL
 
 BUTTON
-498
-211
-579
-244
+593
+222
+674
+255
 Inicializar
 setup
 NIL
@@ -345,10 +416,10 @@ NIL
 1
 
 BUTTON
-499
-260
-571
-293
+594
+271
+666
+304
 Simular
 go
 T
@@ -362,10 +433,10 @@ NIL
 1
 
 MONITOR
-500
-315
-696
-360
+595
+326
+791
+371
 Tiempo promedio de espera (min)
 get-waiting-time
 5
@@ -373,10 +444,10 @@ get-waiting-time
 11
 
 PLOT
-498
-375
-698
-525
+593
+386
+793
+536
 Trabajo total por tiempo transcurrido
 Tiempo
 Trabajo total
@@ -391,10 +462,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot (sum [waiting-time] of clients) / 60"
 
 BUTTON
-498
-167
-599
-200
+593
+178
+694
+211
 Cargar mapa
 loadMap
 NIL
@@ -408,13 +479,35 @@ NIL
 1
 
 MONITOR
-42
-154
-125
-199
-Tiempo (min)
-ticks / 60
-2
+58
+134
+108
+179
+Hrs
+get-hours
+0
+1
+11
+
+MONITOR
+106
+134
+156
+179
+Min
+get-minutes
+0
+1
+11
+
+MONITOR
+155
+134
+205
+179
+Seg
+get-seconds
+0
 1
 11
 
@@ -511,6 +604,23 @@ Polygon -16777216 true false 162 80 132 78 134 135 209 135 194 105 189 96 180 89
 Circle -7500403 true true 47 195 58
 Circle -7500403 true true 195 195 58
 
+chef-icon
+false
+0
+Circle -2064490 true false 92 92 118
+Rectangle -16777216 true false 120 135 135 150
+Rectangle -16777216 true false 165 135 180 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 120 165 180 180
+Rectangle -1 true false 105 45 195 120
+Rectangle -1 true false 90 30 105 45
+Rectangle -1 true false 120 30 120 45
+Rectangle -1 true false 105 30 120 45
+Rectangle -1 true false 135 30 165 45
+Rectangle -1 true false 180 30 195 45
+Rectangle -1 true false 195 30 210 45
+Rectangle -1 true false 75 210 225 315
+
 circle
 false
 0
@@ -521,6 +631,19 @@ false
 0
 Circle -7500403 true true 0 0 300
 Circle -16777216 true false 30 30 240
+
+client-icon
+false
+0
+Circle -2064490 true false 92 92 118
+Rectangle -16777216 true false 120 135 135 150
+Rectangle -16777216 true false 165 135 180 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 120 165 180 180
+Rectangle -1 true false 120 30 120 45
+Rectangle -1 true false 75 210 225 315
+Rectangle -7500403 true true 75 210 225 300
+Polygon -7500403 true true 105 75 195 75 225 150 195 120 105 120 75 150 105 75
 
 cow
 false
@@ -734,6 +857,27 @@ Polygon -10899396 true false 132 85 134 64 107 51 108 17 150 2 192 18 192 52 169
 Polygon -10899396 true false 85 204 60 233 54 254 72 266 85 252 107 210
 Polygon -7500403 true true 119 75 179 75 209 101 224 135 220 225 175 261 128 261 81 224 74 135 88 99
 
+waiter-icon
+false
+0
+Circle -2064490 true false 92 92 118
+Rectangle -16777216 true false 120 135 135 150
+Rectangle -16777216 true false 165 135 180 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 120 165 180 180
+Rectangle -1 true false 120 30 120 45
+Rectangle -1 true false 75 210 225 300
+Circle -6459832 true false 105 90 30
+Circle -6459832 true false 120 90 30
+Circle -6459832 true false 135 90 30
+Circle -6459832 true false 150 90 30
+Circle -6459832 true false 165 90 30
+Circle -6459832 true false 330 135 30
+Rectangle -16777216 true false 120 210 135 240
+Rectangle -16777216 true false 165 210 180 240
+Rectangle -16777216 true false 135 225 150 225
+Rectangle -16777216 true false 135 210 165 225
+
 wheel
 false
 0
@@ -768,7 +912,7 @@ NetLogo 6.4.0
   <experiment name="experiment" repetitions="10" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
-    <timeLimit steps="1000"/>
+    <timeLimit steps="3600"/>
     <metric>get-waiting-time</metric>
     <enumeratedValueSet variable="Cocineros">
       <value value="4"/>
