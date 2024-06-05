@@ -85,6 +85,11 @@ void saveMap(const std::string& path, std::vector<std::vector<TileInfo>> map) {
     std::ofstream file(path);
 
     if (!file.fail()) {
+        for (int i = 15; i > 12; i--) {
+            for (int j = -12; j < 12; j++) {
+                file << ' ' << j << ' ' << i << ' ' << 0;
+            }
+        }
         for (const auto& row : map) {
             for (const auto& patch : row) {
                 file << ' ' << patch.x << ' ' << patch.y << ' ' << patch.color;

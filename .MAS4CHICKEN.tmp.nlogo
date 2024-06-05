@@ -336,9 +336,9 @@ end
 @#$#@#$#@
 GRAPHICS-WINDOW
 57
-182
+177
 565
-751
+686
 -1
 -1
 20.0
@@ -354,7 +354,7 @@ GRAPHICS-WINDOW
 -12
 12
 -12
-15
+12
 0
 0
 1
@@ -367,7 +367,7 @@ INPUTBOX
 134
 110
 Meseros
-4.0
+2.0
 1
 0
 Number
@@ -378,7 +378,7 @@ INPUTBOX
 230
 110
 Cocineros
-6.0
+4.0
 1
 0
 Number
