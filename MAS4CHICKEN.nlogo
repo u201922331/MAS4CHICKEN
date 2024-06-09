@@ -8,8 +8,10 @@ breed [nodes node]
 clients-own [
   waiting-time
   waiting-threshold
-  served
-  satisfaction
+  time
+  quantity
+  ;served
+  ;satisfaction
   chef-id
   food-ready
   time-go
@@ -34,12 +36,14 @@ globals [
   staff-patches
   mesas-patches
   ;; Nodos
-  mesa-node
+  ;mesa-node
   ; cocina-node  ; Spawn de cocineros
   ; entrada-node ; Spawn de comensales
   ; staff-node   ; Spawn de meseros
   ;; Misceláneos
   total-waiting-time
+  happy-clients
+  unhappy-clients
 ]
 
 to loadMap
@@ -98,6 +102,8 @@ to setup
 
   reset-ticks
   set total-waiting-time []
+  set happy-clients 0
+  set unhappy-clients 0
 
   let legend bitmap:import "leyenda3.png"
   bitmap:copy-to-drawing legend 0 0
@@ -190,7 +196,22 @@ to go
         set orders orders + 1
         set label orders
         set label-color black
-        let poswaiter one-of nodes-here
+        let poswaiter 0
+        ifelse empty? path
+        [
+          set poswaiter one-of nodes-here
+        ][
+          let p last path
+          ifelse is-list? p
+          [
+            let l one-of p
+            set poswaiter l
+          ]
+          [
+           set poswaiter p
+          ]
+        ]
+
         let time-chef 0
 
         let c one-of chefs
@@ -217,10 +238,27 @@ to go
 
       sprout-clients 1
       [
+        set quantity (random 3) + 1
+        show quantity
         set waiting-time length-wait
+        if quantity = 1
+        [ set waiting-threshold ((random 10) + 5) * 60
+          set shape "client-icon"
+        ]
+        if quantity = 2
+        [ set waiting-threshold ((random 15) + 5) * 60
+          set shape "client-icon2"
+        ]
+        if quantity = 3
+        [ set waiting-threshold ((random 20) + 5) * 60
+          set shape "client-icon3"
+        ]
+
+        set waiting-threshold ((random 10) + 20) * 60
+        set time 0
         set time-go length-wait
         set color random 139
-        set shape "client-icon"
+
         set size 2
         set label-color black
         set chef-id poschef
@@ -261,6 +299,7 @@ to go
   ]
   ask clients [
     set waiting-time waiting-time - 1
+    set time time + 1
 
     if waiting-time = 0 [
       ifelse food-ready = true [
@@ -291,13 +330,18 @@ to go
           set length-wait length path
 
         ]
-        set total-waiting-time lput (length-wait + time-go) total-waiting-time
+        let total-time (length-wait + time-go)
+        ifelse total-time >= waiting-threshold
+        [ set happy-clients happy-clients + 1 ]
+        [ set unhappy-clients unhappy-clients + 1 ]
+
+        set total-waiting-time lput  total-time total-waiting-time
         set waiting-time length-wait
         set food-ready true
       ]
     ]
 
-    set label precision (waiting-time / 60) 2
+    set label precision (time / 60) 2
     set label-color black
   ]
   tick
@@ -392,7 +436,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 10
-1.0
+10.0
 0.1
 1
 min
@@ -508,6 +552,28 @@ MONITOR
 Seg
 get-seconds
 0
+1
+11
+
+MONITOR
+593
+552
+734
+597
+Clientes satisfechos
+happy-clients
+0
+1
+11
+
+MONITOR
+594
+613
+734
+658
+Clientes no satisfechos
+unhappy-clients
+17
 1
 11
 
@@ -644,6 +710,48 @@ Rectangle -1 true false 120 30 120 45
 Rectangle -1 true false 75 210 225 315
 Rectangle -7500403 true true 75 210 225 300
 Polygon -7500403 true true 105 75 195 75 225 150 195 120 105 120 75 150 105 75
+
+client-icon2
+false
+0
+Circle -2064490 true false 182 92 118
+Rectangle -16777216 true false 210 135 225 150
+Rectangle -16777216 true false 255 135 270 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 210 165 270 180
+Rectangle -1 true false 120 30 120 45
+Rectangle -7500403 true true 150 210 300 300
+Polygon -7500403 true true 195 75 285 75 315 150 285 120 195 120 165 150 195 75
+Rectangle -7500403 true true -15 210 135 300
+Circle -2064490 true false 2 92 118
+Rectangle -16777216 true false 30 135 45 150
+Rectangle -16777216 true false 75 135 90 150
+Rectangle -16777216 true false 30 165 90 180
+Polygon -7500403 true true 15 75 105 75 135 150 105 120 15 120 -15 150 15 75
+
+client-icon3
+false
+0
+Rectangle -7500403 true true 75 90 225 180
+Circle -2064490 true false 182 92 118
+Rectangle -16777216 true false 210 135 225 150
+Rectangle -16777216 true false 255 135 270 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 210 165 270 180
+Rectangle -1 true false 120 30 120 45
+Rectangle -7500403 true true 150 210 300 300
+Polygon -7500403 true true 195 75 285 75 315 150 285 120 195 120 165 150 195 75
+Rectangle -7500403 true true -15 210 135 300
+Circle -2064490 true false 2 92 118
+Rectangle -16777216 true false 30 135 45 150
+Rectangle -16777216 true false 75 135 90 150
+Rectangle -16777216 true false 30 165 90 180
+Polygon -7500403 true true 15 75 105 75 135 150 105 120 15 120 -15 150 15 75
+Circle -2064490 true false 92 2 118
+Polygon -7500403 true true 105 -15 195 -15 225 60 195 30 105 30 75 60 105 -15
+Rectangle -16777216 true false 120 45 135 60
+Rectangle -16777216 true false 165 45 180 60
+Rectangle -16777216 true false 120 75 180 90
 
 cow
 false
@@ -912,16 +1020,16 @@ NetLogo 6.4.0
   <experiment name="experiment" repetitions="10" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
-    <timeLimit steps="3600"/>
+    <timeLimit steps="86400"/>
     <metric>get-waiting-time</metric>
     <enumeratedValueSet variable="Cocineros">
       <value value="4"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Meseros">
-      <value value="5"/>
+      <value value="1"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
-      <value value="20"/>
+      <value value="1"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
