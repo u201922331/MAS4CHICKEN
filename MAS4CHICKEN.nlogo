@@ -22,9 +22,12 @@ waiters-own [
   location
   path
   orders
+  delay
 ]
 chefs-own [
   food-time
+  working-time
+  delay
 ]
 
 globals [
@@ -105,7 +108,7 @@ to setup
   set happy-clients 0
   set unhappy-clients 0
 
-  let legend bitmap:import "leyenda3.png"
+  let legend bitmap:import "leyenda5.png"
   bitmap:copy-to-drawing legend 0 0
 
   let LOGO bitmap:import "Logo MAS4CHICKEN3.png"
@@ -125,10 +128,6 @@ to setup
   set mesas-patches patches with [pcolor = brown]
   set cocina-patches patches with [pcolor = (gray - 1)]
   set staff-patches patches with [pcolor = gray]
-
-  set-default-shape clients "person"
-  set-default-shape waiters "person"
-  set-default-shape chefs "person"
   set-patch-size 20
 
   ask patches with [pcolor != 0] [ sprout-nodes 1]
@@ -155,12 +154,15 @@ to setup
 
     set path []
     set label orders
-    set shape "waiter-icon"
+    set label-color black
+    set shape "waiter-icon3"
+    set color white
 
     let c one-of staff-patches
     set xcor [pxcor] of c
     set ycor [pycor] of c
 
+    set delay 0
     set location one-of nodes-here
     move-to location
   ]
@@ -168,15 +170,17 @@ to setup
   create-chefs COCINEROS [
     set color magenta
     set size 2
-    set food-time ((random 10) + 20) * 60
-    set label food-time / 60
+    set food-time ((random 5) + 10) * 60
+
     set label-color black
-    set shape "chef-icon"
+    set shape "chef-icon3"
+    set color white
 
     let c one-of cocina-patches
     set xcor [pxcor] of c
     set ycor [pycor] of c
-
+    set working-time 0
+    set label working-time / 60
     ; setxy [pxcor pycord] of one-of cocina-patches
   ]
 
@@ -185,6 +189,7 @@ to setup
 end
 
 to go
+  ;; Intervalor clientes
   if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [
     ask one-of mesas-patches [
       let posclient one-of nodes-here
@@ -214,10 +219,11 @@ to go
 
         let time-chef 0
 
-        let c one-of chefs
+        let c first sort-by [[a b] -> [ working-time ] of a < [ working-time ] of b ] chefs
         ask c [
           set poschef one-of nodes-here
-          set time-chef food-time
+          set working-time working-time + food-time
+          set time-chef working-time
         ]
 
         let path1 path-from-to poswaiter posclient
@@ -242,22 +248,21 @@ to go
         show quantity
         set waiting-time length-wait
         if quantity = 1
-        [ set waiting-threshold ((random 10) + 5) * 60
+        [ set waiting-threshold ((random 5) + 10) * 60
           set shape "client-icon"
         ]
         if quantity = 2
-        [ set waiting-threshold ((random 15) + 5) * 60
+        [ set waiting-threshold ((random 5) + 15) * 60
           set shape "client-icon2"
         ]
         if quantity = 3
-        [ set waiting-threshold ((random 20) + 5) * 60
+        [ set waiting-threshold ((random 5) + 20) * 60
           set shape "client-icon3"
         ]
 
-        set waiting-threshold ((random 10) + 20) * 60
         set time 0
         set time-go length-wait
-        set color random 139
+        set color lime
 
         set size 2
         set label-color black
@@ -266,11 +271,42 @@ to go
       ]
     ]
   ]
+  ;; Intervalo Chef
+  if remainder (ticks + 1) (INTERVALO-DEMORA * 60) = 0 [
+    let r random 2
+    ifelse r = 0
+    [;; mesero
+      if any? waiters with [empty? path]
+      [
+        let w one-of waiters with [empty? path]
+        ask w [
+          set color cyan
+          set delay 5 * 60
+          repeat 5 * 60 [ set path lput (one-of nodes-here) path]
+        ]
+      ]
+    ]
+    [;; cocinero
+      if any? chefs with [working-time = 0]
+      [
+        let c one-of chefs with [working-time = 0]
+        ask c [
+          set color cyan
+          set delay 5 * 60
+          set working-time delay
+        ]
+      ]
+    ]
+  ]
   ;;ask clients [
   ;;  if not served [set waiting-time waiting-time + 1]
   ;;]
   ask waiters [
     let new-location 0
+
+    set delay delay - 1
+    if delay = 0 [ set color white]
+
     ifelse empty? path
     [
       set new-location one-of [link-neighbors] of location
@@ -300,6 +336,10 @@ to go
   ask clients [
     set waiting-time waiting-time - 1
     set time time + 1
+
+    ifelse time >  waiting-threshold [set color red]
+    [ifelse time > (waiting-threshold / 2) [set color yellow]
+      [set color lime]]
 
     if waiting-time = 0 [
       ifelse food-ready = true [
@@ -332,8 +372,8 @@ to go
         ]
         let total-time (length-wait + time-go)
         ifelse total-time >= waiting-threshold
-        [ set happy-clients happy-clients + 1 ]
         [ set unhappy-clients unhappy-clients + 1 ]
+        [ set happy-clients happy-clients + 1 ]
 
         set total-waiting-time lput  total-time total-waiting-time
         set waiting-time length-wait
@@ -343,6 +383,14 @@ to go
 
     set label precision (time / 60) 2
     set label-color black
+  ]
+
+  ask chefs [
+    set working-time working-time - 1
+    set delay delay - 1
+    if delay = 0 [set color white ]
+    if working-time < 0 [ set working-time 0 ]
+    set label precision (working-time / 60) 2
   ]
   tick
 end
@@ -376,6 +424,12 @@ to-report get-seconds
   let h floor (ticks / 3600)
   let m floor ((ticks - h * 3600) / 60)
   report ticks - (h * 3600) - (m * 60)
+end
+
+to-report get-satisfaction
+  ifelse (happy-clients + unhappy-clients) = 0
+  [report 0]
+  [report happy-clients / (happy-clients + unhappy-clients)]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -411,7 +465,7 @@ INPUTBOX
 134
 110
 Meseros
-4.0
+5.0
 1
 0
 Number
@@ -422,7 +476,7 @@ INPUTBOX
 230
 110
 Cocineros
-6.0
+3.0
 1
 0
 Number
@@ -577,6 +631,32 @@ unhappy-clients
 1
 11
 
+SLIDER
+239
+95
+411
+128
+Intervalo-Demora
+Intervalo-Demora
+0
+60
+30.0
+5
+1
+min
+HORIZONTAL
+
+MONITOR
+743
+556
+882
+601
+% Clientes satisfechos
+get-satisfaction
+2
+1
+11
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -686,6 +766,49 @@ Rectangle -1 true false 135 30 165 45
 Rectangle -1 true false 180 30 195 45
 Rectangle -1 true false 195 30 210 45
 Rectangle -1 true false 75 210 225 315
+
+chef-icon2
+false
+0
+Circle -2064490 true false 92 92 118
+Rectangle -16777216 true false 120 135 135 150
+Rectangle -16777216 true false 165 135 180 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 120 165 180 180
+Rectangle -1 true false 105 45 195 120
+Rectangle -13840069 true false 90 30 105 45
+Rectangle -1 true false 120 30 120 45
+Rectangle -13840069 true false 105 30 120 45
+Rectangle -13840069 true false 135 30 165 45
+Rectangle -13840069 true false 180 30 195 45
+Rectangle -13840069 true false 195 30 210 45
+Rectangle -1 true false 75 210 225 315
+Rectangle -13840069 true false 75 210 225 300
+Rectangle -13840069 true false 105 45 195 120
+
+chef-icon3
+false
+0
+Circle -2064490 true false 92 92 118
+Rectangle -16777216 true false 120 135 135 150
+Rectangle -16777216 true false 165 135 180 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 120 165 180 180
+Rectangle -1 true false 105 45 195 120
+Rectangle -13840069 true false 90 30 105 45
+Rectangle -1 true false 120 30 120 45
+Rectangle -13840069 true false 105 30 120 45
+Rectangle -13840069 true false 135 30 165 45
+Rectangle -13840069 true false 180 30 195 45
+Rectangle -13840069 true false 195 30 210 45
+Rectangle -1 true false 75 210 225 315
+Rectangle -13840069 true false 75 210 225 300
+Rectangle -13840069 true false 105 45 195 120
+Rectangle -7500403 true true 90 30 120 45
+Rectangle -7500403 true true 135 30 165 45
+Rectangle -7500403 true true 180 30 210 45
+Rectangle -7500403 true true 105 45 195 120
+Rectangle -7500403 true true 75 210 225 300
 
 circle
 false
@@ -985,6 +1108,56 @@ Rectangle -16777216 true false 120 210 135 240
 Rectangle -16777216 true false 165 210 180 240
 Rectangle -16777216 true false 135 225 150 225
 Rectangle -16777216 true false 135 210 165 225
+
+waiter-icon2
+false
+0
+Circle -2064490 true false 92 92 118
+Rectangle -16777216 true false 120 135 135 150
+Rectangle -16777216 true false 165 135 180 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 120 165 180 180
+Rectangle -1 true false 120 30 120 45
+Rectangle -1 true false 75 210 225 300
+Circle -6459832 true false 105 90 30
+Circle -6459832 true false 120 90 30
+Circle -6459832 true false 135 90 30
+Circle -6459832 true false 150 90 30
+Circle -6459832 true false 165 90 30
+Circle -6459832 true false 330 135 30
+Rectangle -16777216 true false 120 210 135 240
+Rectangle -16777216 true false 165 210 180 240
+Rectangle -16777216 true false 135 225 150 225
+Rectangle -16777216 true false 135 210 165 225
+Rectangle -13840069 true false 75 210 120 300
+Rectangle -13840069 true false 120 240 225 300
+Rectangle -13840069 true false 135 225 165 240
+Rectangle -13840069 true false 180 210 225 255
+
+waiter-icon3
+false
+0
+Circle -2064490 true false 92 92 118
+Rectangle -16777216 true false 120 135 135 150
+Rectangle -16777216 true false 165 135 180 150
+Line -16777216 false 120 180 180 180
+Rectangle -16777216 true false 120 165 180 180
+Rectangle -1 true false 120 30 120 45
+Rectangle -1 true false 75 210 225 300
+Circle -6459832 true false 105 90 30
+Circle -6459832 true false 120 90 30
+Circle -6459832 true false 135 90 30
+Circle -6459832 true false 150 90 30
+Circle -6459832 true false 165 90 30
+Circle -6459832 true false 330 135 30
+Rectangle -16777216 true false 120 210 135 240
+Rectangle -16777216 true false 165 210 180 240
+Rectangle -16777216 true false 135 225 150 225
+Rectangle -16777216 true false 135 210 165 225
+Rectangle -7500403 true true 75 210 120 300
+Rectangle -7500403 true true 120 240 210 315
+Rectangle -7500403 true true 180 210 225 300
+Rectangle -7500403 true true 135 225 165 240
 
 wheel
 false
