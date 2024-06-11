@@ -189,6 +189,8 @@ to setup
 end
 
 to go
+  if ticks = 8 * 60 * 60
+  [ stop ]
   ;; Intervalor clientes
   if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [
     ask one-of mesas-patches [
@@ -398,6 +400,7 @@ end
 to-report path-from-to [source target]
   let p []
   ask source [
+
     set p nw:turtles-on-path-to target
   ]
   report p
@@ -429,7 +432,7 @@ end
 to-report get-satisfaction
   ifelse (happy-clients + unhappy-clients) = 0
   [report 0]
-  [report happy-clients / (happy-clients + unhappy-clients)]
+  [report 100 * (happy-clients / (happy-clients + unhappy-clients))]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -465,7 +468,7 @@ INPUTBOX
 134
 110
 Meseros
-5.0
+4.0
 1
 0
 Number
@@ -490,7 +493,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 10
-10.0
+5.0
 0.1
 1
 min
@@ -640,7 +643,7 @@ Intervalo-Demora
 Intervalo-Demora
 0
 60
-30.0
+25.0
 5
 1
 min
@@ -1190,19 +1193,118 @@ NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="10" runMetricsEveryStep="true">
+  <experiment name="E1" repetitions="10" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
-    <timeLimit steps="86400"/>
+    <timeLimit steps="28800"/>
     <metric>get-waiting-time</metric>
+    <metric>get-satisfaction</metric>
+    <enumeratedValueSet variable="Meseros">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Cocineros">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Clientes">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Demora">
+      <value value="30"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="E2" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="28800"/>
+    <metric>get-waiting-time</metric>
+    <metric>get-satisfaction</metric>
+    <enumeratedValueSet variable="Meseros">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Cocineros">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Clientes">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Demora">
+      <value value="25"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="E3" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="28800"/>
+    <metric>get-waiting-time</metric>
+    <metric>get-satisfaction</metric>
+    <enumeratedValueSet variable="Meseros">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Cocineros">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Clientes">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Demora">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="E4" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="28800"/>
+    <metric>get-waiting-time</metric>
+    <metric>get-satisfaction</metric>
+    <enumeratedValueSet variable="Meseros">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Cocineros">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Clientes">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Demora">
+      <value value="60"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="E5" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="28800"/>
+    <metric>get-waiting-time</metric>
+    <metric>get-satisfaction</metric>
+    <enumeratedValueSet variable="Meseros">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Cocineros">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Clientes">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Demora">
+      <value value="60"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="E6" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="28800"/>
+    <metric>get-waiting-time</metric>
+    <metric>get-satisfaction</metric>
+    <enumeratedValueSet variable="Meseros">
+      <value value="2"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="Cocineros">
       <value value="4"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="Meseros">
-      <value value="1"/>
-    </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
-      <value value="1"/>
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Demora">
+      <value value="60"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
