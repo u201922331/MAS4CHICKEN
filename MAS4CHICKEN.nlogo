@@ -476,7 +476,7 @@ INPUTBOX
 230
 110
 Cocineros
-3.0
+6.0
 1
 0
 Number
@@ -658,41 +658,49 @@ get-satisfaction
 11
 
 @#$#@#$#@
-## WHAT IS IT?
+## ¿QUÉ ES?
 
-(a general understanding of what the model is trying to show or explain)
+MAS4CHICKEN es un simulador basado en Sistemas Multiagente, el cual simulará el comportamiento entre Cocineros, Meseros y Comensales.
 
-## HOW IT WORKS
+## ¿CÓMO FUNCIONA?
 
-(what rules the agents use to create the overall behavior of the model)
+Primero, se tiene que cargar el mapa a evaluar. Luego, se tienen que ajustar los parámetros deseados. Una vez que estos estén adecuadamente configurados, se procede a iniciar la simulación.
 
-## HOW TO USE IT
+## ¿CÓMO SE USA?
 
-(how to use the model, including a description of each of the items in the Interface tab)
+Empezamos por cargar el mapa del restaurante deseado.Una vez completado este paso, procedemos a "Inicializar el programa". Este proceso depende de varios factores: el mapa cargado, el número de Meseros y de de Cocineros, el Intervalo de clientes, y el Intervalo de demora del personal. Al inicializar el programa, se generarán los nodos sobre los cuales se desplazarán los agentes. Asimismo, se generarán los agentes en sus respectivos espacios.
 
-## THINGS TO NOTICE
+Para empezar la simulación, se debe presionar "Simular". Durante la ejecución del modelo, se puede modificar una variable llamada "Intervalo-Clientes", el cual determina cuán frecuente aparecerán nuevos cliente, e "Intervalo-Demora", el cual determinará el tiempo de demora de cada personal antes de volver a trabajar.
 
-(suggested things for the user to notice while running the model)
+Para monitorear el desempeño de los agentes, se tienen los siguientes elementos:
 
-## THINGS TO TRY
+- Tiempo promedio de espera (min).
+- Gráfica del trabajo total por tiempo transcurrido.
+- Contador de HH:MM:SS.
+- Conteo de Clientes Satisfechos/No Satisfechos.
+- Porcentaje de Clientes Satisfechos.
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
 
-## EXTENDING THE MODEL
+## PARA PROBAR
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+Previo a la inicialización, se pueden modificar tres variables: El conteo de cocineros y meseros, y el intervalo de clientes. Las dos primeras tienen que ser valores mayores a 1. La variable de intervalo de clientes puede ser modificada incluso durante la ejecución. Esta se encuentra en un rango de 1 a 100. Recordar que esta indica cuán seguido aparecerán nuevos clientes.
 
-## NETLOGO FEATURES
+## EXTENDIENDO EL MODELO
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+Se puede extender el modelo añadiendo visualización en 3D, característica que este modelo no ha contemplado por el momento.
 
-## RELATED MODELS
+## A TOMAR EN CUENTA
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+El presente modelo está diseñado para ser ejecutado en la versión de escritorio de NetLogo, debido a que la versión web carece de ciertas características tales como: entrada/salida de archivos, editor de formas de agente, manejo de imágenes, etc.
 
-## CREDITS AND REFERENCES
+## CRÉDITOS Y REFERENCIAS
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+Este modelo fue creado por:
+
+- Nander Emanuel Meléndez Huamanchumo
+- Jack Yefri Cruz Mamani
+
+Se puede acceder a este modelo y a todos sus componentes a través del siguiente enlace de Github: https://github.com/u201922331/MAS4CHICKEN
 @#$#@#$#@
 default
 true
