@@ -156,7 +156,7 @@ to setup
     set label orders
     set label-color black
     set shape "waiter-icon3"
-    set color white
+    set color blue
 
     let c one-of staff-patches
     set xcor [pxcor] of c
@@ -671,9 +671,9 @@ Primero, se tiene que cargar el mapa a evaluar. Luego, se tienen que ajustar los
 
 ## ¿CÓMO SE USA?
 
-Empezamos por cargar el mapa del restaurante deseado.Una vez completado este paso, procedemos a "Inicializar el programa". Este proceso depende de varios factores: el mapa cargado, el número de Meseros y de de Cocineros, el Intervalo de clientes, y el Intervalo de demora del personal. Al inicializar el programa, se generarán los nodos sobre los cuales se desplazarán los agentes. Asimismo, se generarán los agentes en sus respectivos espacios.
+Empezamos por cargar el mapa del restaurante deseado.Una vez completado este paso, procedemos a "Inicializar el programa". Este proceso depende de varios factores: el mapa cargado, el número de meseros y de cocineros, el intervalo de clientes, y el Intervalo de demora del personal. Al inicializar el programa, se generarán los nodos sobre los cuales se desplazarán los agentes. Asimismo, se generarán los agentes en sus respectivos espacios.
 
-Para empezar la simulación, se debe presionar "Simular". Durante la ejecución del modelo, se puede modificar una variable llamada "Intervalo-Clientes", el cual determina cuán frecuente aparecerán nuevos cliente, e "Intervalo-Demora", el cual determinará el tiempo de demora de cada personal antes de volver a trabajar.
+Para empezar la simulación, se debe presionar "Simular". Durante la ejecución del modelo, se puede modificar una variable llamada "Intervalo-Clientes", el cual determina el intervalo de tiempo cuando un nuevo cliente aparecerá en el sistema, e "Intervalo-Demora", el cual determina el intervalo de tiempo cuando un mesero o cocinero pasa a un estado no disponible, esto representa el tiempo empleado en los servicios higiénicos, un accidente no grave, o una llamada importante.
 
 Para monitorear el desempeño de los agentes, se tienen los siguientes elementos:
 
@@ -686,19 +686,19 @@ Para monitorear el desempeño de los agentes, se tienen los siguientes elementos
 
 ## PARA PROBAR
 
-Previo a la inicialización, se pueden modificar tres variables: El conteo de cocineros y meseros, y el intervalo de clientes. Las dos primeras tienen que ser valores mayores a 1. La variable de intervalo de clientes puede ser modificada incluso durante la ejecución. Esta se encuentra en un rango de 1 a 100. Recordar que esta indica cuán seguido aparecerán nuevos clientes.
+Previo a la inicialización, se pueden modificar tres variables: El conteo de cocineros y meseros, y el intervalo de clientes. Las dos primeras tienen que ser valores mayores a 1. La variable de intervalo de clientes puede ser modificada incluso durante la ejecución. Esta se encuentra en un rango de 1 a 100. Recordar que esta indica intervalo de llegade de nuevos clientes.
 
 ## EXTENDIENDO EL MODELO
 
-Se puede extender el modelo añadiendo visualización en 3D, característica que este modelo no ha contemplado por el momento.
+Se puede extender el modelo añadiendo visualización en 3D y ejecutando algorítmos de grafos más sofisticados.
 
 ## A TOMAR EN CUENTA
 
-El presente modelo está diseñado para ser ejecutado en la versión de escritorio de NetLogo, debido a que la versión web carece de ciertas características tales como: entrada/salida de archivos, editor de formas de agente, manejo de imágenes, etc.
+El presente modelo está diseñado para ser ejecutado en la versión de escritorio de NetLogo, debido a que la versión web carece de ciertas características tales como: entrada/salida de archivos, librerías como nw (grafos) manejo de imágenes (bitmap), etc.
 
 ## CRÉDITOS Y REFERENCIAS
 
-Este modelo fue creado por:
+El modelo forma parte de una tesis para obtener el titulo profesional de ciencias de la computación, los autores son:
 
 - Nander Emanuel Meléndez Huamanchumo
 - Jack Yefri Cruz Mamani
