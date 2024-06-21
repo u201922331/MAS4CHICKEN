@@ -307,7 +307,7 @@ to go
     let new-location 0
 
     set delay delay - 1
-    if delay = 0 [ set color blue]
+    if delay = 0 [ set color ]
 
     ifelse empty? path
     [
