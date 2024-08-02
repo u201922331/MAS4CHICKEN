@@ -64,8 +64,7 @@ to loadMap
   ]
 end
 
-to loaddefaultMap
-  let file "./mapGenerator/MAS4CHICKEN_map0.txt"
+to loaddefaultMap [file]
   set patch-data []
 
   if (file != false) [
@@ -97,7 +96,12 @@ to setup
   ifelse (patch-data = 0)
   [;; cargar mapa por defecto
     clear-all
-    loaddefaultMap
+    ifelse (Mapa = 0)
+    [loaddefaultMap "./mapGenerator/MAS4CHICKEN_map0.txt"]
+    [ ifelse (Mapa = 1)
+      [loaddefaultMap "./mapGenerator/MAS4CHICKEN_map1.txt"]
+      [loaddefaultMap "./mapGenerator/MAS4CHICKEN_map2.txt"]
+    ]
     showMap
     user-message "Mapa por defecto"
   ]
@@ -168,7 +172,7 @@ to setup
   ]
 
   create-chefs COCINEROS [
-    set color magenta
+    ;;set color magenta
     set size 2
     set food-time ((random 5) + 10) * 60
 
@@ -436,10 +440,10 @@ to-report get-satisfaction
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-43
-173
-552
-782
+57
+182
+1685
+1811
 -1
 -1
 20.0
@@ -452,10 +456,10 @@ GRAPHICS-WINDOW
 0
 0
 1
--12
-12
--12
-17
+-40
+40
+-40
+40
 0
 0
 1
@@ -463,10 +467,10 @@ ticks
 30.0
 
 INPUTBOX
-42
-50
-134
-110
+43
+22
+135
+82
 Meseros
 4.0
 1
@@ -474,21 +478,21 @@ Meseros
 Number
 
 INPUTBOX
-138
-50
-230
-110
+139
+22
+231
+82
 Cocineros
-6.0
+3.0
 1
 0
 Number
 
 SLIDER
-238
-50
-410
-83
+240
+22
+412
+55
 Intervalo-Clientes
 Intervalo-Clientes
 0
@@ -500,10 +504,10 @@ min
 HORIZONTAL
 
 BUTTON
-579
-213
-660
-246
+430
+76
+511
+109
 Inicializar
 setup
 NIL
@@ -517,10 +521,10 @@ NIL
 1
 
 BUTTON
-580
-262
-652
-295
+431
+120
+503
+153
 Simular
 go
 T
@@ -534,10 +538,10 @@ NIL
 1
 
 MONITOR
-580
-317
-776
-362
+549
+10
+749
+55
 Tiempo promedio de espera (min)
 get-waiting-time
 5
@@ -545,10 +549,10 @@ get-waiting-time
 11
 
 PLOT
-579
-377
-779
-527
+548
+55
+748
+205
 Trabajo total por tiempo transcurrido
 Tiempo
 Trabajo total
@@ -563,10 +567,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot (sum [waiting-time] of clients) / 60"
 
 BUTTON
-579
-169
-680
-202
+430
+32
+531
+65
 Cargar mapa
 loadMap
 NIL
@@ -580,10 +584,10 @@ NIL
 1
 
 MONITOR
-44
-125
-94
-170
+58
+134
+108
+179
 Hrs
 get-hours
 0
@@ -591,10 +595,10 @@ get-hours
 11
 
 MONITOR
-92
-125
-142
-170
+106
+134
+156
+179
 Min
 get-minutes
 0
@@ -602,10 +606,10 @@ get-minutes
 11
 
 MONITOR
-140
-125
-190
-170
+155
+134
+205
+179
 Seg
 get-seconds
 0
@@ -613,10 +617,10 @@ get-seconds
 11
 
 MONITOR
-579
-543
-720
-588
+768
+11
+909
+56
 Clientes satisfechos
 happy-clients
 0
@@ -624,10 +628,10 @@ happy-clients
 11
 
 MONITOR
-580
-604
-720
-649
+768
+58
+908
+103
 Clientes no satisfechos
 unhappy-clients
 17
@@ -635,30 +639,40 @@ unhappy-clients
 11
 
 SLIDER
-239
-95
-411
-128
+241
+67
+413
+100
 Intervalo-Demora
 Intervalo-Demora
 0
 60
-25.0
+5.0
 5
 1
 min
 HORIZONTAL
 
 MONITOR
-729
-547
-868
-592
+769
+105
+908
+150
 % Clientes satisfechos
 get-satisfaction
 2
 1
 11
+
+CHOOSER
+240
+111
+413
+156
+Mapa
+Mapa
+0 1 2
+0
 
 @#$#@#$#@
 ## ¿QUÉ ES?
@@ -1211,13 +1225,16 @@ NetLogo 6.4.0
       <value value="5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Cocineros">
-      <value value="3"/>
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mapa">
+      <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
       <value value="5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Demora">
-      <value value="30"/>
+      <value value="5"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="E2" repetitions="10" runMetricsEveryStep="true">
@@ -1230,13 +1247,16 @@ NetLogo 6.4.0
       <value value="4"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Cocineros">
-      <value value="2"/>
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mapa">
+      <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
-      <value value="5"/>
+      <value value="6"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Demora">
-      <value value="25"/>
+      <value value="6"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="E3" repetitions="10" runMetricsEveryStep="true">
@@ -1246,16 +1266,19 @@ NetLogo 6.4.0
     <metric>get-waiting-time</metric>
     <metric>get-satisfaction</metric>
     <enumeratedValueSet variable="Meseros">
-      <value value="3"/>
+      <value value="8"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Cocineros">
-      <value value="3"/>
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mapa">
+      <value value="1"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
-      <value value="5"/>
+      <value value="4"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Demora">
-      <value value="40"/>
+      <value value="10"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="E4" repetitions="10" runMetricsEveryStep="true">
@@ -1265,16 +1288,19 @@ NetLogo 6.4.0
     <metric>get-waiting-time</metric>
     <metric>get-satisfaction</metric>
     <enumeratedValueSet variable="Meseros">
-      <value value="2"/>
+      <value value="7"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Cocineros">
-      <value value="3"/>
+      <value value="6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mapa">
+      <value value="1"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
       <value value="5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Demora">
-      <value value="60"/>
+      <value value="11"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="E5" repetitions="10" runMetricsEveryStep="true">
@@ -1284,16 +1310,19 @@ NetLogo 6.4.0
     <metric>get-waiting-time</metric>
     <metric>get-satisfaction</metric>
     <enumeratedValueSet variable="Meseros">
-      <value value="2"/>
+      <value value="10"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Cocineros">
+      <value value="9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mapa">
       <value value="2"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
-      <value value="5"/>
+      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Demora">
-      <value value="60"/>
+      <value value="15"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="E6" repetitions="10" runMetricsEveryStep="true">
@@ -1303,16 +1332,19 @@ NetLogo 6.4.0
     <metric>get-waiting-time</metric>
     <metric>get-satisfaction</metric>
     <enumeratedValueSet variable="Meseros">
-      <value value="2"/>
+      <value value="9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Cocineros">
-      <value value="4"/>
+      <value value="8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mapa">
+      <value value="2"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Clientes">
-      <value value="5"/>
+      <value value="4"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Demora">
-      <value value="60"/>
+      <value value="16"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>

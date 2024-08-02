@@ -1,0 +1,76 @@
+75 75
+***************************************************************************
+***************************************************************************
+***************************************************************************
+***************************************************************************
+###################################@@@#####################################
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#        =======         =======         =======         ======           #
+#                                                                         #
+#                                                                         #
+#                                                                         #
+#.............................#############################################
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+#.............................CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#
+###########################################################################
