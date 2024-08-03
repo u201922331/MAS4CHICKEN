@@ -112,10 +112,10 @@ to setup
   set happy-clients 0
   set unhappy-clients 0
 
-  let legend bitmap:import "leyenda5.png"
+  let legend bitmap:import "./assets/images/leyenda.png"
   bitmap:copy-to-drawing legend 0 0
 
-  let LOGO bitmap:import "Logo MAS4CHICKEN3.png"
+  let LOGO bitmap:import "./assets/images/Logo MAS4CHICKEN.png"
   bitmap:copy-to-drawing LOGO 350 0
 
   ask clients [die]
@@ -672,7 +672,7 @@ CHOOSER
 Mapa
 Mapa
 0 1 2
-0
+2
 
 @#$#@#$#@
 ## ¿QUÉ ES?
