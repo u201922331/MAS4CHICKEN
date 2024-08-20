@@ -28,6 +28,8 @@ chefs-own [
   food-time
   working-time
   delay
+  pos-clients
+  time-clients
 ]
 
 globals [
@@ -47,6 +49,7 @@ globals [
   total-waiting-time
   happy-clients
   unhappy-clients
+  waiter-area
 ]
 
 to loadMap
@@ -176,11 +179,19 @@ to setup
     set ycor [pycor] of c
     set working-time 0
     set label working-time / 60
+    set pos-clients []
+    set time-clients []
     ; setxy [pxcor pycord] of one-of cocina-patches
   ]
 
   ask links [set color 7]
 
+  create-turtles 1 [
+    set xcor -10
+    set ycor -10
+    set size 2
+    set waiter-area one-of nodes-here
+  ]
 end
 
 to go
@@ -190,7 +201,7 @@ to go
   if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [
     ask one-of mesas-patches [
       let posclient one-of nodes-here
-      let length-wait 0
+      show posclient
       let poschef 0
 
       let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
@@ -198,52 +209,28 @@ to go
         set orders orders + 1
         set label orders
         set label-color black
-        let poswaiter 0
-        ifelse empty? path
-        [
-          set poswaiter one-of nodes-here
-        ][
-          let p last path
-          ifelse is-list? p
-          [
-            let l one-of p
-            set poswaiter l
-          ]
-          [
-           set poswaiter p
-          ]
-        ]
-
         let time-chef 0
 
         let c first sort-by [[a b] -> [ working-time ] of a < [ working-time ] of b ] chefs
         ask c [
           set poschef one-of nodes-here
           set working-time working-time + food-time
-          set time-chef working-time
+
+          set pos-clients lput posclient pos-clients
+          set time-clients lput food-time time-clients
         ]
 
-        let path1 path-from-to poswaiter posclient
-        foreach path1 [x -> set path lput x path]
-
-        let path2 path-from-to posclient poschef
-        foreach path2 [x -> set path lput x path]
-
-        ;;foreach range time-to-prepare [x -> set path lput poschef path]
-
-        ;;let path3 path-from-to poschef posclient
-        ;;foreach path3 [x -> set path lput x path]
-
-        set length-wait (length path + time-chef)
-
-        ;;set total-waiting-time lput length path total-waiting-time
+        set path lput waiter-area path
+        set path lput posclient path
+        set path lput waiter-area path
+        set path lput poschef path
       ]
 
       sprout-clients 1
       [
         set quantity (random 3) + 1
         show quantity
-        set waiting-time length-wait
+        ;set waiting-time length-wait
         if quantity = 1
         [ set waiting-threshold ((random 5) + 10) * 60
           set shape "client-icon"
@@ -258,7 +245,7 @@ to go
         ]
 
         set time 0
-        set time-go length-wait
+        ;set time-go length-wait
         set color lime
 
         set size 2
@@ -311,23 +298,25 @@ to go
       set location new-location
     ]
     [
-      let p first path
-      ;;show p
-      ;;show path
-      ifelse is-list? p
-      [
-        let l one-of p
-        set new-location l
-        set path remove-item 0 path
-        move-to new-location
-        set location new-location
-      ]
-      [
-        set new-location p
-        set path remove-item 0 path
-        move-to new-location
-        set location new-location
-      ]
+      let destination first path
+      ;show destination
+      ;show distance destination
+
+      ;;move towards p
+      let routes [link-neighbors] of location
+      ;; show routes
+      ;show routes
+      ;ask routes [
+      ;  show distance destination
+      ;]
+      set routes routes with [pcolor != black]
+
+      set new-location min-one-of routes [distance destination]
+      face new-location
+      set location new-location
+      fd 1
+
+      if [patch-here] of location = [patch-here] of destination [set path remove-item 0 path]
     ]
   ]
   ask clients [
@@ -388,6 +377,15 @@ to go
     if delay = 0 [set color white ]
     if working-time < 0 [ set working-time 0 ]
     set label precision (working-time / 60) 2
+
+    if not empty? time-clients [
+      foreach time-clients [x ->
+        if x = 0 [
+          show "return"
+        ]
+        set x x - 1
+      ]
+    ]
   ]
   tick
 end
@@ -433,8 +431,8 @@ end
 GRAPHICS-WINDOW
 57
 182
-1685
-1811
+685
+811
 -1
 -1
 20.0
@@ -447,10 +445,10 @@ GRAPHICS-WINDOW
 0
 0
 1
--40
-40
--40
-40
+-15
+15
+-15
+15
 0
 0
 1
@@ -488,7 +486,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 10
-5.0
+10.0
 0.1
 1
 min
@@ -638,7 +636,7 @@ Intervalo-Demora
 Intervalo-Demora
 0
 60
-5.0
+10.0
 5
 1
 min
@@ -663,7 +661,7 @@ CHOOSER
 Mapa
 Mapa
 0 1 2
-2
+0
 
 @#$#@#$#@
 ## ¿QUÉ ES?
