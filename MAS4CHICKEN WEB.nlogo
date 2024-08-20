@@ -106,11 +106,11 @@ to setup
   set happy-clients 0
   set unhappy-clients 0
 
-  let legend bitmap:import "./assets/images/leyenda.png"
-  bitmap:copy-to-drawing legend 0 0
+  ;let legend bitmap:import "./assets/images/leyenda.png"
+  ;bitmap:copy-to-drawing legend 0 0
 
-  let LOGO bitmap:import "./assets/images/Logo MAS4CHICKEN.png"
-  bitmap:copy-to-drawing LOGO 350 0
+  ;let LOGO bitmap:import "./assets/images/Logo MAS4CHICKEN.png"
+  ;bitmap:copy-to-drawing LOGO 350 0
 
   ask clients [die]
   ask waiters [die]
@@ -379,11 +379,15 @@ to go
     set label precision (working-time / 60) 2
 
     if not empty? time-clients [
-      foreach time-clients [x ->
+
+      foreach range length time-clients [ i ->
+        let x item i time-clients
         if x = 0 [
+
           show "return"
         ]
-        set x x - 1
+        ;; Modifica el valor y actualiza la lista
+        set time-clients replace-item i time-clients (x - 1)
       ]
     ]
   ]
