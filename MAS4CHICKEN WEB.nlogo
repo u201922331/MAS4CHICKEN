@@ -377,17 +377,34 @@ to go
     if delay = 0 [set color white ]
     if working-time < 0 [ set working-time 0 ]
     set label precision (working-time / 60) 2
+    let poschef one-of nodes-here
 
     if not empty? time-clients [
 
       foreach range length time-clients [ i ->
         let x item i time-clients
-        if x = 0 [
+        let posclient item i pos-clients
+        ifelse x = 0 [
+          ; Seleccionar un mesero con para que lleve la orden lista
+          let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
+          ask w [
+            set orders orders + 1
+            set label orders
+            set label-color black
 
-          show "return"
+            set path lput waiter-area path
+            set path lput poschef path
+            set path lput waiter-area path
+            set path lput posclient path
+          ]
+
+          set time-clients remove-item i time-clients
+          set pos-clients remove-item i pos-clients
         ]
-        ;; Modifica el valor y actualiza la lista
-        set time-clients replace-item i time-clients (x - 1)
+        [
+          ;; Modifica el valor y actualiza la lista
+          set time-clients replace-item i time-clients (x - 1)
+        ]
       ]
     ]
   ]
