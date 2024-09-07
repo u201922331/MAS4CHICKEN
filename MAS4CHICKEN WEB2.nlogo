@@ -118,7 +118,7 @@ to setup
   create-turtles 1 [                      ; Punto central del mesero
     set xcor -3
     set ycor -6
-    set size 2
+    set hidden? true
     set waiter-area one-of nodes-here
   ]
 end
@@ -154,6 +154,7 @@ to go
         set path lput posclient path
         set path lput waiter-area path
         set path lput poschef path
+        set path lput waiter-area path
       ]
 
       sprout-clients 1                     ; Agente cliente
@@ -243,12 +244,12 @@ to go
       if [patch-here] of location = [patch-here] of destination [
         set path remove-item 0 path
         if [patch-here] of location = [patch-here] of client-id [
-          ;ask clients with [location = client-id] [
-          ;  ifelse time >  waiting-threshold
-          ;  [set happy-clients happy-clients + 1]
-          ;  [set happy-clients happy-clients + 1 ]
-          ;  die
-          ;]
+          ask clients-on location
+          [
+            if time < waiting-threshold  [set happy-clients happy-clients + 1]
+            set total-waiting-time lput time total-waiting-time
+            die
+          ]
         ]
       ]
 
@@ -256,119 +257,71 @@ to go
   ]
 
   ask clients [
-    set waiting-time waiting-time - 1
-    set time time + 1
+    ;set waiting-time waiting-time - 1
+    set time time + 1                      ; Actualizando el tiempo
+    set label precision (time / 60) 2
 
-    ifelse time >  waiting-threshold
-    [set color red]
-    [ifelse time > (waiting-threshold / 2)
-      [set color yellow]
-      [set color lime]]
-
-
-    if waiting-time = 0 [
-      ifelse food-ready = true [
-        die
-      ]
-      [
-        let poschef chef-id
-        let posclient one-of nodes-here
-        let length-wait 0
-
-        let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
-        ask w [
-          set orders orders + 1
-          set label orders
-          let poswaiter one-of nodes-here
-
-          let path1 path-from-to poswaiter poschef
-          foreach path1 [x -> set path lput x path]
-
-          let path2 path-from-to poschef posclient
-          foreach path2 [x -> set path lput x path]
-
-          ;;foreach range time-to-prepare [x -> set path lput poschef path]
-
-          ;;let path3 path-from-to poschef posclient
-          ;;foreach path3 [x -> set path lput x path]
-
-          set length-wait length path
-
-        ]
-
-        let total-time (length-wait + time-go)
-        ifelse total-time >= waiting-threshold
-        [ set unhappy-clients unhappy-clients + 1 ]
-        [ set happy-clients happy-clients + 1 ]
-
-        set total-waiting-time lput  total-time total-waiting-time
-        set waiting-time length-wait
-        set food-ready true
-      ]
+    if color = red [                       ; Eliminando el cliente
+      set unhappy-clients unhappy-clients + 1
+      set total-waiting-time lput time total-waiting-time
+      die
     ]
 
-    set label precision (time / 60) 2
-    set label-color black
+    ifelse time >  waiting-threshold        ; Actualizando el color basado en el tiempo y el threshold
+    [ set color red ]
+    [ ifelse time > (waiting-threshold / 2)
+      [set color yellow]
+      [set color lime]
+    ]
   ]
 
   ask chefs [
-    set working-time working-time - 1
-    set delay delay - 1
+    set delay delay - 1                      ; Actualizando el delay
     if delay = 0 [set color white ]
+
+    set working-time working-time - 1           ; Actualizando el tiempo de preparacion
     if working-time < 0 [ set working-time 0 ]
     set label precision (working-time / 60) 2
-    let poschef one-of nodes-here
 
+    let poschef one-of nodes-here                    ; Movimiento del mesero
     let adjacent [link-neighbors] of location
     set adjacent adjacent with [pcolor = (gray - 1)]
     let new-location one-of adjacent
     move-to new-location
     set location new-location
 
-    if not empty? time-clients [
-      let remove-items []
-      foreach range length time-clients [ i ->
-        let x item i time-clients
-        let posclient item i pos-clients
-        ifelse x = 0 [
-          ; Seleccionar un mesero con para que lleve la orden lista
+    if not empty? time-clients [                           ; Lista de tiempo prepación
+      let timeclient first time-clients
+      let posclient first pos-clients
+
+      ifelse any? clients-on posclient [                    ; Verificar si existe el cliente
+        ifelse timeclient = 0 [                             ; Verificar si el plato esta listo
           let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
           ask w [
             set orders orders + 1
             set label orders
-            set label-color black
             set client-id posclient
 
             set path lput waiter-area path
             set path lput poschef path
             set path lput waiter-area path
             set path lput posclient path
-            set food-waiter true
           ]
-          set remove-items lput i remove-items
+          set time-clients remove-item 0 time-clients
+          set pos-clients remove-item 0 pos-clients
         ]
         [
-          ;; Modifica el valor y actualiza la lista
-          set time-clients replace-item i time-clients (x - 1)
+          set time-clients replace-item 0 time-clients (timeclient - 1)
         ]
       ]
-      foreach remove-items [i ->
-        set time-clients remove-item i time-clients
-        set pos-clients remove-item i pos-clients
+      [
+        set working-time (working-time - timeclient)
+        set time-clients remove-item 0 time-clients
+        set pos-clients remove-item 0 pos-clients
       ]
-
     ]
   ]
   tick
-end
-
-to-report path-from-to [source target]
-  let p []
-  ask source [
-
-    ;set p nw:turtles-on-path-to target
-  ]
-  report p
 end
 
 to-report get-waiting-time
@@ -433,7 +386,7 @@ INPUTBOX
 135
 82
 Meseros
-1.0
+2.0
 1
 0
 Number
@@ -444,7 +397,7 @@ INPUTBOX
 231
 82
 Cocineros
-3.0
+5.0
 1
 0
 Number
@@ -458,7 +411,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 10
-10.0
+5.0
 0.1
 1
 min
@@ -525,7 +478,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot (sum [waiting-time] of clients) / 60"
+"default" 1.0 0 -16777216 true "" "plot (sum [working-time] of chefs) / 60"
 
 MONITOR
 58
@@ -607,16 +560,6 @@ get-satisfaction
 2
 1
 11
-
-CHOOSER
-240
-111
-413
-156
-Mapa
-Mapa
-0 1 2
-0
 
 @#$#@#$#@
 ## ¿QUÉ ES?
