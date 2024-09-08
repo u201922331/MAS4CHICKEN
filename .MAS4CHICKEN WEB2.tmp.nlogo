@@ -294,7 +294,7 @@ to go
           [
             ; if time < waiting-threshold  [set happy-clients happy-clients + 1]
             ; set total-waiting-time lput time total-waiting-time
-            set color white
+
             set is-done true
           ]
         ]
