@@ -113,7 +113,7 @@ to setup
     move-to one-of cocina-patches         ; Posicion
     set location one-of nodes-here
 
-    set food-time ((random 5) + 10) * 60
+    set food-time ((random 5) + Tiempo-preparacion) * 60
 
     set working-time 0
     set label working-time / 60
@@ -127,12 +127,47 @@ to setup
     set hidden? true
     set waiter-area one-of nodes-here
   ]
+  set-current-plot "Histograma del tiempo de espera"
+  set-plot-x-range 1 ( 90 + 1 )
+  set-current-plot "Cantidad clientes"
+  clear-plot
 end
 
 to go
   ;; INTERVALOS
 
-  if ticks = 8 * 60 * 60 [ stop ]          ; Simular un día laboral
+  if ticks = 8 * 60 * 60 [ stop ]                                       ; Simular un día laboral
+  if ticks = 1 * 60 * 60 [                                              ; Simular distribución normal (1pm hora pico)
+    ifelse Feriado-Fin-de-Semana = True                                 ; Simular día feriado o fin de semana
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.10))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.05))]
+  ]
+  if ticks = 2 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.15))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.10))]
+  ]
+  if ticks = 3 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.20))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.15))]
+  ]
+  if ticks = 5 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.20))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.15))]
+  ]
+  if ticks = 6 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.15))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.10))]
+  ]
+  if ticks = 7 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.10))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.05))]
+  ]
+
 
   if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [        ; Creación del cliente
     ask one-of entrada-patches [
@@ -171,15 +206,15 @@ to go
       [
         set quantity (random 3) + 1
         if quantity = 1                    ; Cliente individual
-        [ set waiting-threshold ((random 5) + 10) * 60
+        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera) * 60
           set shape "client-icon"
         ]
         if quantity = 2                    ; Cliente pareja
-        [ set waiting-threshold ((random 5) + 15) * 60
+        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.2) * 60
           set shape "client-icon2"
         ]
         if quantity = 3                    ; Cliente familiar
-        [ set waiting-threshold ((random 5) + 20) * 60
+        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.4) * 60
           set shape "client-icon3"
         ]
         show "Cliente"
@@ -236,7 +271,7 @@ to go
     ]
   ]
 
-  if remainder (ticks + 1) (INTERVALO-DEMORA * 60) = 0 [ ; Pausa del chef y mesero
+  if remainder (ticks + 1) (INTERVALO-PAUSA * 60) = 0 [ ; Pausa del chef y mesero
     if random 2 = 0    ; Agente mesero
     [
       if any? waiters with [empty? path]
@@ -399,6 +434,7 @@ to go
       ]
     ]
   ]
+  update-plot ; Histograma de tiempo de espera
   tick
 end
 
@@ -410,8 +446,24 @@ to-report get-waiting-time
   ]
 end
 
+to update-plot
+  set-current-plot "Histograma del tiempo de espera"
+  let total-waiting-time-minutes map [i -> round (i / 60)] total-waiting-time
+
+  histogram total-waiting-time-minutes
+
+  if not empty? total-waiting-time-minutes [
+    let maxbar modes total-waiting-time-minutes
+    let maxrange length filter [ the-item -> the-item = item 0 maxbar ] total-waiting-time-minutes
+    set-plot-y-range 0 max list 10 maxrange
+    show word "maxbar" maxbar
+    show word "maxrange" maxrange
+    show word "total-waiting-time-minutes" total-waiting-time-minutes
+  ]
+end
+
 to-report get-hours
-  report floor (ticks / 3600)
+  report floor 10 + (ticks / 3600)
 end
 
 to-report get-minutes
@@ -432,10 +484,10 @@ to-report get-satisfaction
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-57
-182
-685
-811
+224
+272
+852
+901
 -1
 -1
 20.0
@@ -459,10 +511,10 @@ ticks
 30.0
 
 INPUTBOX
-43
-22
-135
-82
+41
+60
+133
+120
 Meseros
 4.0
 1
@@ -470,10 +522,10 @@ Meseros
 Number
 
 INPUTBOX
-139
-22
-231
-82
+137
+60
+229
+120
 Cocineros
 5.0
 1
@@ -481,25 +533,25 @@ Cocineros
 Number
 
 SLIDER
-240
-22
-412
-55
+1180
+59
+1217
+261
 Intervalo-Clientes
 Intervalo-Clientes
 0
-10
-5.0
-0.1
+60
+24.0
+5
 1
 min
-HORIZONTAL
+VERTICAL
 
 BUTTON
-430
-76
-511
-109
+423
+60
+508
+132
 Inicializar
 setup
 NIL
@@ -513,10 +565,10 @@ NIL
 1
 
 BUTTON
-431
-120
-503
-153
+425
+138
+509
+206
 Simular
 go
 T
@@ -530,39 +582,21 @@ NIL
 1
 
 MONITOR
-549
-10
-749
-55
+516
+60
+716
+105
 Tiempo promedio de espera (min)
 get-waiting-time
 5
 1
 11
 
-PLOT
-548
-55
-748
-205
-Trabajo total por tiempo transcurrido
-Tiempo
-Trabajo total
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot (sum [working-time] of chefs) / 60"
-
 MONITOR
-58
-134
-108
-179
+56
+172
+106
+217
 Hrs
 get-hours
 0
@@ -570,10 +604,10 @@ get-hours
 11
 
 MONITOR
-106
-134
-156
-179
+104
+172
+154
+217
 Min
 get-minutes
 0
@@ -581,10 +615,10 @@ get-minutes
 11
 
 MONITOR
-155
-134
-205
-179
+153
+172
+203
+217
 Seg
 get-seconds
 0
@@ -592,10 +626,10 @@ get-seconds
 11
 
 MONITOR
-768
-11
-909
-56
+728
+61
+869
+106
 Clientes satisfechos
 happy-clients
 0
@@ -603,10 +637,10 @@ happy-clients
 11
 
 MONITOR
-768
-58
-908
-103
+879
+60
+1019
+105
 Clientes no satisfechos
 unhappy-clients
 17
@@ -614,12 +648,12 @@ unhappy-clients
 11
 
 SLIDER
-241
-67
-413
-100
-Intervalo-Demora
-Intervalo-Demora
+234
+60
+406
+93
+Intervalo-Pausa
+Intervalo-Pausa
 0
 60
 20.0
@@ -629,15 +663,122 @@ min
 HORIZONTAL
 
 MONITOR
-769
+1031
+60
+1170
 105
-908
-150
 % Clientes satisfechos
 get-satisfaction
 2
 1
 11
+
+SWITCH
+42
+127
+227
+160
+Feriado-Fin-de-Semana
+Feriado-Fin-de-Semana
+0
+1
+-1000
+
+SLIDER
+233
+136
+406
+169
+Umbral-tiempo-espera
+Umbral-tiempo-espera
+0
+100
+56.0
+2
+1
+min
+HORIZONTAL
+
+SLIDER
+234
+98
+405
+131
+Tiempo-preparacion
+Tiempo-preparacion
+0
+100
+50.0
+2
+1
+min
+HORIZONTAL
+
+PLOT
+515
+111
+866
+261
+Histograma del tiempo de espera
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"PenTiempo" 1.0 1 -7500403 true "" ""
+
+PLOT
+876
+111
+1169
+261
+Cantidad clientes
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count clients"
+
+TEXTBOX
+45
+14
+190
+48
+Parámetros iniciales
+14
+0.0
+1
+
+TEXTBOX
+423
+16
+573
+50
+Ejecutar \nsimulación
+14
+0.0
+1
+
+TEXTBOX
+516
+17
+666
+35
+Métricas de evaluación
+14
+0.0
+1
 
 @#$#@#$#@
 ## ¿QUÉ ES?
