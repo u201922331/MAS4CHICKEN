@@ -477,11 +477,11 @@ end
 GRAPHICS-WINDOW
 31
 300
-667
+668
 938
 -1
 -1
-14.1
+20.3
 1
 14
 1
@@ -532,7 +532,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 60
-18.0
+33.0
 5
 1
 min
@@ -779,22 +779,22 @@ OUTPUT
 10
 
 TEXTBOX
-272
-258
-384
-293
+280
+278
+392
+313
 Entorno
-10
+14
 0.0
 1
 
 TEXTBOX
-823
-263
-1153
-311
+834
+275
+1164
+323
 Registro de eventos
-10
+14
 0.0
 1
 
