@@ -46,6 +46,7 @@ globals [
   polleria-patches   ; Parcelas específicas
   cocina-patches
   staff-patches
+  staff-main-patch
   mesas-patches
   total-waiting-time ; Lista de tiempo de espera
   happy-clients      ; Cantidad de clientes satisfechos
@@ -82,6 +83,7 @@ to setup
   set mesas-patches patches with [pcolor = brown]       ; Parcelas de las mesas
   set cocina-patches patches with [pcolor = (gray - 1)] ; Parcelas de la zona de cocina
   set staff-patches patches with [pcolor = gray]        ; Parcelas de la zona de meseros
+  set staff-main-patch patches with [pcolor = (gray + 1)]
   set entrada-patches patches with [pcolor = (orange + 2)] ; Parcelas de la zona de entrada/salida
   ;set-patch-size 20
 
@@ -127,6 +129,7 @@ to setup
     set xcor -3
     set ycor -6
     set hidden? true
+    move-to one-of staff-main-patch
     set waiter-area one-of nodes-here
   ]
   set-current-plot "Histograma del tiempo de espera"
@@ -330,6 +333,8 @@ to go
         ]
       ]
 
+
+
     ]
   ]
 
@@ -529,11 +534,11 @@ end
 GRAPHICS-WINDOW
 32
 314
-539
-822
+849
+1132
 -1
 -1
-19.96
+10.0
 1
 14
 1
@@ -543,10 +548,10 @@ GRAPHICS-WINDOW
 0
 0
 1
--12
-12
--12
-12
+-40
+40
+-40
+40
 0
 0
 1
@@ -584,7 +589,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 60
-32.0
+26.0
 5
 1
 min
@@ -824,10 +829,10 @@ Métricas de evaluación
 1
 
 OUTPUT
-675
-314
-1213
-953
+856
+313
+1394
+952
 10
 
 TEXTBOX
@@ -841,10 +846,10 @@ Entorno
 1
 
 TEXTBOX
-835
-289
-1165
-337
+1016
+288
+1346
+336
 Registro de eventos
 14
 0.0

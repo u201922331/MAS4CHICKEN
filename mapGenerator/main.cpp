@@ -33,6 +33,7 @@ float symbol2col(char c) {
     case ' ': return 45.0f; // Restaurant
     case '#': return  0.0f; // Walls
     case '.': return  5.0f; // Staff
+    case 'M': return 6.0f; // Staff main
     case '=': return 35.0f; // Tables
     case '*': return 65.0f; // Outside
     case '@': return 27.0f; // Client spawn
