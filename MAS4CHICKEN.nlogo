@@ -1,4 +1,4 @@
-extensions [ nw bitmap ]
+extensions [fetch bitmap]
 
 breed [clients client]
 breed [waiters waiter]
@@ -12,287 +12,276 @@ clients-own [
   quantity
   ;served
   ;satisfaction
-  chef-id
+  chef-id           ; posicion del chef asignado
   food-ready
   time-go
+  goto
+  location          ; posición del cliente
+  is-waiting
+  is-done
+  assigned-table
+  entry-point
 ]
 waiters-own [
   ;chef-id
   ;client-id
-  location
-  path
+  location          ; posición del mesero
+  path              ; Lista de nodos de destino ej. punto central del mesero, cliente, cocinero, etc.
   orders
-  delay
+  delay             ; Delay del mesero (de 0 a 5 minutos)
+  food-waiter
+  client-id         ; posición del cliente asignado
 ]
 chefs-own [
   food-time
   working-time
-  delay
+  delay              ; Delay del mesero (de 0 a 5 minutos)
+  pos-clients        ; Lista de posiciones de los clientes
+  time-clients       ; Lista de tiempo prepación
+  location           ; posición del chef
 ]
 
 globals [
-  ;; Info general de las parcelas
-  patch-data
-  ;; Parcelas específicas
-  polleria-patches
+  patch-data         ; Info general de las parcelas
+  polleria-patches   ; Parcelas específicas
   cocina-patches
   staff-patches
   mesas-patches
-  ;; Nodos
-  ;mesa-node
-  ; cocina-node  ; Spawn de cocineros
-  ; entrada-node ; Spawn de comensales
-  ; staff-node   ; Spawn de meseros
-  ;; Misceláneos
-  total-waiting-time
-  happy-clients
-  unhappy-clients
+  total-waiting-time ; Lista de tiempo de espera
+  happy-clients      ; Cantidad de clientes satisfechos
+  unhappy-clients    ; Cantidad de clientes insatisfechos
+  waiter-area        ; Punto central del mesero
+  entrada-patches
 ]
 
-to loadMap
-  let file user-file
-  set patch-data []
-
-  if (file != false) [
-    file-open file
-    while [not file-at-end?] [
-      set patch-data sentence patch-data (list(list file-read file-read file-read))
-    ]
-
-    user-message "¡Mapa cargado exitosamente!"
-    file-close
-  ]
-end
-
-to loaddefaultMap [file]
-  set patch-data []
-
-  if (file != false) [
-    file-open file
-    while [not file-at-end?] [
-      set patch-data sentence patch-data (list(list file-read file-read file-read))
-    ]
-
-    user-message "¡Mapa cargado exitosamente!"
-    file-close
-  ]
-end
-
-to showMap
-  ifelse (is-list? patch-data) [
-    foreach patch-data [ three-tuple ->
-      ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
-    ]
-  ] [
-    user-message "AVISO: Se requiere haber cargado el mapa."
-  ]
-
-  display
-end
-
 to setup
+  clear-output
 
-  ;;show patch-data
-  ifelse (patch-data = 0)
-  [;; cargar mapa por defecto
-    clear-all
-    ifelse (Mapa = 0)
-    [loaddefaultMap "./mapGenerator/MAS4CHICKEN_map0.txt"]
-    [ ifelse (Mapa = 1)
-      [loaddefaultMap "./mapGenerator/MAS4CHICKEN_map1.txt"]
-      [loaddefaultMap "./mapGenerator/MAS4CHICKEN_map2.txt"]
-    ]
-    showMap
-    user-message "Mapa por defecto"
-  ]
-  [showMap]
+  ; Cargar el mapa
+  ; set patch-data [[-12	15	0]	[-11	15	0]	[-10	15	0]	[-9	15	0]	[-8	15	0]	[-7	15	0]	[-6	15	0]	[-5	15	0]	[-4	15	0]	[-3	15	0]	[-2	15	0]	[-1	15	0]	[0	15	0]	[1	15	0]	[2	15	0]	[3	15	0]	[4	15	0]	[5	15	0]	[6	15	0]	[7	15	0]	[8	15	0]	[9	15	0]	[10	15	0]	[11	15	0]	[-12	14	0]	[-11	14	0]	[-10	14	0]	[-9	14	0]	[-8	14	0]	[-7	14	0]	[-6	14	0]	[-5	14	0]	[-4	14	0]	[-3	14	0]	[-2	14	0]	[-1	14	0]	[0	14	0]	[1	14	0]	[2	14	0]	[3	14	0]	[4	14	0]	[5	14	0]	[6	14	0]	[7	14	0]	[8	14	0]	[9	14	0]	[10	14	0]	[11	14	0]	[-12	13	0]	[-11	13	0]	[-10	13	0]	[-9	13	0]	[-8	13	0]	[-7	13	0]	[-6	13	0]	[-5	13	0]	[-4	13	0]	[-3	13	0]	[-2	13	0]	[-1	13	0]	[0	13	0]	[1	13	0]	[2	13	0]	[3	13	0]	[4	13	0]	[5	13	0]	[6	13	0]	[7	13	0]	[8	13	0]	[9	13	0]	[10	13	0]	[11	13	0]	[-12	12	0]	[-11	12	0]	[-10	12	0]	[-9	12	0]	[-8	12	0]	[-7	12	27]	[-6	12	27]	[-5	12	27]	[-4	12	0]	[-3	12	0]	[-2	12	27]	[-1	12	27]	[0	12	27]	[1	12	0]	[2	12	0]	[3	12	27]	[4	12	27]	[5	12	27]	[6	12	0]	[7	12	0]	[8	12	0]	[9	12	0]	[10	12	0]	[11	12	0]	[12	12	0]	[-12	11	0]	[-11	11	45]	[-10	11	45]	[-9	11	45]	[-8	11	45]	[-7	11	45]	[-6	11	45]	[-5	11	45]	[-4	11	45]	[-3	11	45]	[-2	11	45]	[-1	11	45]	[0	11	45]	[1	11	45]	[2	11	45]	[3	11	45]	[4	11	45]	[5	11	45]	[6	11	45]	[7	11	45]	[8	11	45]	[9	11	45]	[10	11	45]	[11	11	45]	[12	11	0]	[-12	10	0]	[-11	10	45]	[-10	10	45]	[-9	10	35]	[-8	10	35]	[-7	10	45]	[-6	10	45]	[-5	10	35]	[-4	10	35]	[-3	10	45]	[-2	10	45]	[-1	10	35]	[0	10	35]	[1	10	45]	[2	10	45]	[3	10	35]	[4	10	35]	[5	10	45]	[6	10	45]	[7	10	35]	[8	10	35]	[9	10	45]	[10	10	45]	[11	10	45]	[12	10	0]	[-12	9	0]	[-11	9	45]	[-10	9	45]	[-9	9	45]	[-8	9	45]	[-7	9	45]	[-6	9	45]	[-5	9	45]	[-4	9	45]	[-3	9	45]	[-2	9	45]	[-1	9	45]	[0	9	45]	[1	9	45]	[2	9	45]	[3	9	45]	[4	9	45]	[5	9	45]	[6	9	45]	[7	9	45]	[8	9	45]	[9	9	45]	[10	9	45]	[11	9	45]	[12	9	0]	[-12	8	0]	[-11	8	45]	[-10	8	45]	[-9	8	45]	[-8	8	45]	[-7	8	45]	[-6	8	45]	[-5	8	45]	[-4	8	45]	[-3	8	45]	[-2	8	45]	[-1	8	45]	[0	8	45]	[1	8	45]	[2	8	45]	[3	8	45]	[4	8	45]	[5	8	45]	[6	8	45]	[7	8	45]	[8	8	45]	[9	8	45]	[10	8	45]	[11	8	45]	[12	8	0]	[-12	7	0]	[-11	7	45]	[-10	7	45]	[-9	7	35]	[-8	7	35]	[-7	7	45]	[-6	7	45]	[-5	7	35]	[-4	7	35]	[-3	7	45]	[-2	7	45]	[-1	7	35]	[0	7	35]	[1	7	45]	[2	7	45]	[3	7	35]	[4	7	35]	[5	7	45]	[6	7	45]	[7	7	35]	[8	7	35]	[9	7	45]	[10	7	45]	[11	7	45]	[12	7	0]	[-12	6	0]	[-11	6	45]	[-10	6	45]	[-9	6	45]	[-8	6	45]	[-7	6	45]	[-6	6	45]	[-5	6	45]	[-4	6	45]	[-3	6	45]	[-2	6	45]	[-1	6	45]	[0	6	45]	[1	6	45]	[2	6	45]	[3	6	45]	[4	6	45]	[5	6	45]	[6	6	45]	[7	6	45]	[8	6	45]	[9	6	45]	[10	6	45]	[11	6	45]	[12	6	0]	[-12	5	0]	[-11	5	45]	[-10	5	45]	[-9	5	45]	[-8	5	45]	[-7	5	45]	[-6	5	45]	[-5	5	45]	[-4	5	45]	[-3	5	45]	[-2	5	45]	[-1	5	45]	[0	5	45]	[1	5	45]	[2	5	45]	[3	5	45]	[4	5	45]	[5	5	45]	[6	5	45]	[7	5	45]	[8	5	45]	[9	5	45]	[10	5	45]	[11	5	45]	[12	5	0]	[-12	4	0]	[-11	4	45]	[-10	4	45]	[-9	4	35]	[-8	4	35]	[-7	4	45]	[-6	4	45]	[-5	4	35]	[-4	4	35]	[-3	4	45]	[-2	4	45]	[-1	4	35]	[0	4	35]	[1	4	45]	[2	4	45]	[3	4	35]	[4	4	35]	[5	4	45]	[6	4	45]	[7	4	35]	[8	4	35]	[9	4	45]	[10	4	45]	[11	4	45]	[12	4	0]	[-12	3	0]	[-11	3	45]	[-10	3	45]	[-9	3	45]	[-8	3	45]	[-7	3	45]	[-6	3	45]	[-5	3	45]	[-4	3	45]	[-3	3	45]	[-2	3	45]	[-1	3	45]	[0	3	45]	[1	3	45]	[2	3	45]	[3	3	45]	[4	3	45]	[5	3	45]	[6	3	45]	[7	3	45]	[8	3	45]	[9	3	45]	[10	3	45]	[11	3	45]	[12	3	0]	[-12	2	0]	[-11	2	45]	[-10	2	45]	[-9	2	45]	[-8	2	45]	[-7	2	45]	[-6	2	45]	[-5	2	45]	[-4	2	45]	[-3	2	45]	[-2	2	45]	[-1	2	45]	[0	2	45]	[1	2	45]	[2	2	45]	[3	2	45]	[4	2	45]	[5	2	45]	[6	2	45]	[7	2	45]	[8	2	45]	[9	2	45]	[10	2	45]	[11	2	45]	[12	2	0]	[-12	1	0]	[-11	1	45]	[-10	1	45]	[-9	1	35]	[-8	1	35]	[-7	1	45]	[-6	1	45]	[-5	1	35]	[-4	1	35]	[-3	1	45]	[-2	1	45]	[-1	1	35]	[0	1	35]	[1	1	45]	[2	1	45]	[3	1	35]	[4	1	35]	[5	1	45]	[6	1	45]	[7	1	35]	[8	1	35]	[9	1	45]	[10	1	45]	[11	1	45]	[12	1	0]	[-12	0	0]	[-11	0	45]	[-10	0	45]	[-9	0	45]	[-8	0	45]	[-7	0	45]	[-6	0	45]	[-5	0	45]	[-4	0	45]	[-3	0	45]	[-2	0	45]	[-1	0	45]	[0	0	45]	[1	0	45]	[2	0	45]	[3	0	45]	[4	0	45]	[5	0	45]	[6	0	45]	[7	0	45]	[8	0	45]	[9	0	45]	[10	0	45]	[11	0	45]	[12	0	0]	[-12	-1	0]	[-11	-1	45]	[-10	-1	45]	[-9	-1	45]	[-8	-1	45]	[-7	-1	45]	[-6	-1	45]	[-5	-1	45]	[-4	-1	45]	[-3	-1	45]	[-2	-1	45]	[-1	-1	45]	[0	-1	45]	[1	-1	45]	[2	-1	45]	[3	-1	45]	[4	-1	45]	[5	-1	45]	[6	-1	45]	[7	-1	45]	[8	-1	45]	[9	-1	45]	[10	-1	45]	[11	-1	45]	[12	-1	0]	[-12	-2	0]	[-11	-2	45]	[-10	-2	45]	[-9	-2	35]	[-8	-2	35]	[-7	-2	45]	[-6	-2	45]	[-5	-2	35]	[-4	-2	35]	[-3	-2	45]	[-2	-2	45]	[-1	-2	35]	[0	-2	35]	[1	-2	45]	[2	-2	45]	[3	-2	35]	[4	-2	35]	[5	-2	45]	[6	-2	45]	[7	-2	35]	[8	-2	35]	[9	-2	45]	[10	-2	45]	[11	-2	45]	[12	-2	0]	[-12	-3	0]	[-11	-3	45]	[-10	-3	45]	[-9	-3	45]	[-8	-3	45]	[-7	-3	45]	[-6	-3	45]	[-5	-3	45]	[-4	-3	45]	[-3	-3	45]	[-2	-3	45]	[-1	-3	45]	[0	-3	45]	[1	-3	45]	[2	-3	45]	[3	-3	45]	[4	-3	45]	[5	-3	45]	[6	-3	45]	[7	-3	45]	[8	-3	45]	[9	-3	45]	[10	-3	45]	[11	-3	45]	[12	-3	0]	[-12	-4	0]	[-11	-4	45]	[-10	-4	45]	[-9	-4	45]	[-8	-4	45]	[-7	-4	45]	[-6	-4	45]	[-5	-4	45]	[-4	-4	45]	[-3	-4	45]	[-2	-4	45]	[-1	-4	45]	[0	-4	45]	[1	-4	45]	[2	-4	45]	[3	-4	45]	[4	-4	45]	[5	-4	45]	[6	-4	45]	[7	-4	45]	[8	-4	45]	[9	-4	45]	[10	-4	45]	[11	-4	45]	[12	-4	0]	[-12	-5	0]	[-11	-5	45]	[-10	-5	45]	[-9	-5	45]	[-8	-5	45]	[-7	-5	45]	[-6	-5	45]	[-5	-5	45]	[-4	-5	45]	[-3	-5	45]	[-2	-5	45]	[-1	-5	45]	[0	-5	45]	[1	-5	45]	[2	-5	45]	[3	-5	45]	[4	-5	45]	[5	-5	45]	[6	-5	45]	[7	-5	45]	[8	-5	45]	[9	-5	45]	[10	-5	45]	[11	-5	45]	[12	-5	0]	[-12	-6	0]	[-11	-6	0]	[-10	-6	0]	[-9	-6	0]	[-8	-6	0]	[-7	-6	0]	[-6	-6	0]	[-5	-6	0]	[-4	-6	5]	[-3	-6	5]	[-2	-6	5]	[-1	-6	0]	[0	-6	0]	[1	-6	0]	[2	-6	0]	[3	-6	0]	[4	-6	0]	[5	-6	0]	[6	-6	0]	[7	-6	0]	[8	-6	0]	[9	-6	0]	[10	-6	0]	[11	-6	0]	[12	-6	0]	[-12	-7	0]	[-11	-7	5]	[-10	-7	5]	[-9	-7	5]	[-8	-7	5]	[-7	-7	5]	[-6	-7	5]	[-5	-7	5]	[-4	-7	5]	[-3	-7	5]	[-2	-7	5]	[-1	-7	5]	[0	-7	4]	[1	-7	4]	[2	-7	4]	[3	-7	4]	[4	-7	4]	[5	-7	4]	[6	-7	4]	[7	-7	4]	[8	-7	4]	[9	-7	4]	[10	-7	4]	[11	-7	4]	[12	-7	0]	[-12	-8	0]	[-11	-8	5]	[-10	-8	5]	[-9	-8	5]	[-8	-8	5]	[-7	-8	5]	[-6	-8	5]	[-5	-8	5]	[-4	-8	5]	[-3	-8	5]	[-2	-8	5]	[-1	-8	5]	[0	-8	4]	[1	-8	4]	[2	-8	4]	[3	-8	4]	[4	-8	4]	[5	-8	4]	[6	-8	4]	[7	-8	4]	[8	-8	4]	[9	-8	4]	[10	-8	4]	[11	-8	4]	[12	-8	0]	[-12	-9	0]	[-11	-9	5]	[-10	-9	5]	[-9	-9	5]	[-8	-9	5]	[-7	-9	5]	[-6	-9	5]	[-5	-9	5]	[-4	-9	5]	[-3	-9	5]	[-2	-9	5]	[-1	-9	5]	[0	-9	4]	[1	-9	4]	[2	-9	4]	[3	-9	4]	[4	-9	4]	[5	-9	4]	[6	-9	4]	[7	-9	4]	[8	-9	4]	[9	-9	4]	[10	-9	4]	[11	-9	4]	[12	-9	0]	[-12	-10	0]	[-11	-10	5]	[-10	-10	5]	[-9	-10	5]	[-8	-10	5]	[-7	-10	5]	[-6	-10	5]	[-5	-10	5]	[-4	-10	5]	[-3	-10	5]	[-2	-10	5]	[-1	-10	5]	[0	-10	4]	[1	-10	4]	[2	-10	4]	[3	-10	4]	[4	-10	4]	[5	-10	4]	[6	-10	4]	[7	-10	4]	[8	-10	4]	[9	-10	4]	[10	-10	4]	[11	-10	4]	[12	-10	0]	[-12	-11	0]	[-11	-11	5]	[-10	-11	5]	[-9	-11	5]	[-8	-11	5]	[-7	-11	5]	[-6	-11	5]	[-5	-11	5]	[-4	-11	5]	[-3	-11	5]	[-2	-11	5]	[-1	-11	5]	[0	-11	4]	[1	-11	4]	[2	-11	4]	[3	-11	4]	[4	-11	4]	[5	-11	4]	[6	-11	4]	[7	-11	4]	[8	-11	4]	[9	-11	4]	[10	-11	4]	[11	-11	4]	[12	-11	0]	[-12	-12	0]	[-11	-12	0]	[-10	-12	0]	[-9	-12	0]	[-8	-12	0]	[-7	-12	0]	[-6	-12	0]	[-5	-12	0]	[-4	-12	0]	[-3	-12	0]	[-2	-12	0]	[-1	-12	0]	[0	-12	0]	[1	-12	0]	[2	-12	0]	[3	-12	0]	[4	-12	0]	[5	-12	0]	[6	-12	0]	[7	-12	0]	[8	-12	0]	[9	-12	0]	[10	-12	0]	[11	-12	0]	[12	-12	0]]
+  ; foreach patch-data [ three-tuple ->
+  ;     ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
+  ; ]
+  ; display
 
   reset-ticks
-  set total-waiting-time []
+  set total-waiting-time []  ; Variables iniciales
   set happy-clients 0
   set unhappy-clients 0
 
-  let legend bitmap:import "./assets/images/leyenda.png"
-  bitmap:copy-to-drawing legend 0 0
-
-  let LOGO bitmap:import "./assets/images/Logo MAS4CHICKEN.png"
-  bitmap:copy-to-drawing LOGO 350 0
-
-  ask clients [die]
-  ask waiters [die]
-  ask chefs [die]
-  ask nodes [die]
-  ask links [die]
+  ask turtles [die]          ; Limpieza de agente
   clear-plot
 
-  set MESEROS   max list 1 MESEROS
+  set MESEROS   max list 1 MESEROS   ; Validar parámetros iniciales
   set COCINEROS max list 1 COCINEROS
 
-  set polleria-patches patches with [pcolor = yellow]
-  set mesas-patches patches with [pcolor = brown]
-  set cocina-patches patches with [pcolor = (gray - 1)]
-  set staff-patches patches with [pcolor = gray]
-  set-patch-size 20
+  ; Colores
+  let border-patches black
 
-  ask patches with [pcolor != 0] [ sprout-nodes 1]
-  ask nodes [ create-links-with nodes-on neighbors]
+  set polleria-patches patches with [pcolor = yellow]   ; Parcelas del patio de comida
+  set mesas-patches patches with [pcolor = brown]       ; Parcelas de las mesas
+  set cocina-patches patches with [pcolor = (gray - 1)] ; Parcelas de la zona de cocina
+  set staff-patches patches with [pcolor = gray]        ; Parcelas de la zona de meseros
+  set entrada-patches patches with [pcolor = (orange + 2)] ; Parcelas de la zona de entrada/salida
+  ;set-patch-size 20
 
+  ask patches with [pcolor != border-patches] [ sprout-nodes 1]    ; Agente nodo
+  ask nodes [ create-links-with nodes-on neighbors4]
   ask nodes [
     set hidden? true
-    ;;set shape "dot"
-    ;;set size 1
-    ;;set label who
   ]
 
-  ; ask patch 0 0 [
-  ;   set entrada-node one-of nodes-at 5 5
-  ;   set mesa-node one-of nodes-at -5 5
-  ;   set cocina-node one-of nodes-at 5 -5
-  ; ]
-
-  create-waiters MESEROS [
-    set color 123
+  create-waiters MESEROS [               ; Agente mesero (waiter)
+    set shape "waiter-icon3"             ; Iniciales
+    set color blue
     set size 2
-
-    ;;show location
+    set label orders                     ; Etiqueta
+    set label-color black
+    move-to one-of staff-patches         ; Posicion
+    set location one-of nodes-here
 
     set path []
-    set label orders
-    set label-color black
-    set shape "waiter-icon3"
-    set color blue
-
-    let c one-of staff-patches
-    set xcor [pxcor] of c
-    set ycor [pycor] of c
-
     set delay 0
-    set location one-of nodes-here
-    move-to location
+
+    set food-waiter false
+    set client-id one-of nodes-here
   ]
 
-  create-chefs COCINEROS [
-    ;;set color magenta
-    set size 2
-    set food-time ((random 5) + 10) * 60
-
-    set label-color black
-    set shape "chef-icon3"
+  create-chefs COCINEROS [                ; Agente cocinero (chef)
+    set shape "chef-icon3"                ; Iniciales
     set color white
+    set size 2
+    set label-color black                 ; Etiqueta
+    move-to one-of cocina-patches         ; Posicion
+    set location one-of nodes-here
 
-    let c one-of cocina-patches
-    set xcor [pxcor] of c
-    set ycor [pycor] of c
+    set food-time ((random 5) + Tiempo-preparacion) * 60
+
     set working-time 0
     set label working-time / 60
-    ; setxy [pxcor pycord] of one-of cocina-patches
+    set pos-clients []
+    set time-clients []
   ]
 
-  ask links [set color 7]
-
+  create-turtles 1 [                      ; Punto central del mesero
+    set xcor -3
+    set ycor -6
+    set hidden? true
+    set waiter-area one-of nodes-here
+  ]
+  set-current-plot "Histograma del tiempo de espera"
+  set-plot-x-range 1 ( 90 + 1 )
+  set-current-plot "Cantidad clientes"
+  clear-plot
 end
 
 to go
-  if ticks = 8 * 60 * 60
-  [ stop ]
-  ;; Intervalor clientes
-  if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [
-    ask one-of mesas-patches [
-      let posclient one-of nodes-here
-      let length-wait 0
+  ;; INTERVALOS
+
+  if ticks = 8 * 60 * 60 [ stop ]                                       ; Simular un día laboral
+  if ticks = 1 * 60 * 60 [                                              ; Simular distribución normal (1pm hora pico)
+    ifelse Feriado-Fin-de-Semana = True                                 ; Simular día feriado o fin de semana
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.10))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.05))]
+  ]
+  if ticks = 2 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.15))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.10))]
+  ]
+  if ticks = 3 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.20))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.15))]
+  ]
+  if ticks = 5 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.20))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.15))]
+  ]
+  if ticks = 6 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.15))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.10))]
+  ]
+  if ticks = 7 * 60 * 60 [
+    ifelse Feriado-Fin-de-Semana = True
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.10))]
+    [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.05))]
+  ]
+
+
+  if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [        ; Creación del cliente
+    ask one-of entrada-patches [
+      let postable 0
+      let poschef 0
+
+      ask one-of mesas-patches [
+        set postable one-of nodes-here
+
+        let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
+        ask w [                              ; Agente mesero (w)
+          set orders orders + 1
+          set label orders
+          set label-color black
+          let time-chef 0
+
+          let c first sort-by [[a b] -> [ working-time ] of a < [ working-time ] of b ] chefs
+          ask c [                             ; Agente chef (c)
+            set poschef one-of nodes-here
+            set working-time working-time + food-time
+
+            set pos-clients lput postable pos-clients
+            set time-clients lput food-time time-clients
+          ]
+          set path lput waiter-area path
+          set path lput postable path
+          set path lput waiter-area path
+          set path lput poschef path
+          set path lput waiter-area path
+
+          output-print (word "Mesero tomando la orden del cliente en (" xcor " " ycor ")")
+        ]
+      ]
+      sprout-clients 1                     ; Agente cliente
+      [
+        set quantity (random 3) + 1
+        if quantity = 1                    ; Cliente individual
+        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera) * 60
+          set shape "client-icon"
+        ]
+        if quantity = 2                    ; Cliente pareja
+        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.2) * 60
+          set shape "client-icon2"
+        ]
+        if quantity = 3                    ; Cliente familiar
+        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.4) * 60
+          set shape "client-icon3"
+        ]
+        set time 0                         ; Iniciales
+        set color lime
+        set size 2
+        set label-color black              ; Label
+        ; move-to postable                   ; Posición
+
+        set location one-of nodes-here
+
+        set chef-id poschef
+        set food-ready false
+        set is-waiting false
+        set is-done false
+        set assigned-table postable
+
+        set entry-point location
+
+        output-print (word "Llegó un cliente en (" xcor " " ycor ").")
+      ]
+    ]
+
+    ask one-of mesas-patches [             ; Agente mesa
+      let postable one-of nodes-here
       let poschef 0
 
       let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
-      ask w [
+      ask w [                              ; Agente mesero (w)
         set orders orders + 1
         set label orders
         set label-color black
-        let poswaiter 0
-        ifelse empty? path
-        [
-          set poswaiter one-of nodes-here
-        ][
-          let p last path
-          ifelse is-list? p
-          [
-            let l one-of p
-            set poswaiter l
-          ]
-          [
-           set poswaiter p
-          ]
-        ]
-
         let time-chef 0
 
         let c first sort-by [[a b] -> [ working-time ] of a < [ working-time ] of b ] chefs
-        ask c [
+        ask c [                             ; Agente chef (c)
           set poschef one-of nodes-here
           set working-time working-time + food-time
-          set time-chef working-time
+
+          set pos-clients lput postable pos-clients
+          set time-clients lput food-time time-clients
         ]
-
-        let path1 path-from-to poswaiter posclient
-        foreach path1 [x -> set path lput x path]
-
-        let path2 path-from-to posclient poschef
-        foreach path2 [x -> set path lput x path]
-
-        ;;foreach range time-to-prepare [x -> set path lput poschef path]
-
-        ;;let path3 path-from-to poschef posclient
-        ;;foreach path3 [x -> set path lput x path]
-
-        set length-wait (length path + time-chef)
-
-        ;;set total-waiting-time lput length path total-waiting-time
-      ]
-
-      sprout-clients 1
-      [
-        set quantity (random 3) + 1
-        show quantity
-        set waiting-time length-wait
-        if quantity = 1
-        [ set waiting-threshold ((random 5) + 10) * 60
-          set shape "client-icon"
-        ]
-        if quantity = 2
-        [ set waiting-threshold ((random 5) + 15) * 60
-          set shape "client-icon2"
-        ]
-        if quantity = 3
-        [ set waiting-threshold ((random 5) + 20) * 60
-          set shape "client-icon3"
-        ]
-
-        set time 0
-        set time-go length-wait
-        set color lime
-
-        set size 2
-        set label-color black
-        set chef-id poschef
-        set food-ready false
+        set path lput waiter-area path
+        set path lput postable path
+        set path lput waiter-area path
+        set path lput poschef path
+        set path lput waiter-area path
       ]
     ]
   ]
-  ;; Intervalo Chef
-  if remainder (ticks + 1) (INTERVALO-DEMORA * 60) = 0 [
-    let r random 2
-    ifelse r = 0
-    [;; mesero
+
+  if remainder (ticks + 1) (INTERVALO-PAUSA * 60) = 0 [ ; Pausa del chef y mesero
+    if random 2 = 0    ; Agente mesero
+    [
       if any? waiters with [empty? path]
       [
         let w one-of waiters with [empty? path]
         ask w [
           set color cyan
           set delay 5 * 60
-          repeat 5 * 60 [ set path lput (one-of nodes-here) path]
+          repeat delay [ set path lput (one-of nodes-here) path]
         ]
       ]
     ]
-    [;; cocinero
+    ;; cocinero
+    if random 2 = 0           ; Agente cocinero
+    [
       if any? chefs with [working-time = 0]
       [
         let c one-of chefs with [working-time = 0]
@@ -304,110 +293,143 @@ to go
       ]
     ]
   ]
-  ;;ask clients [
-  ;;  if not served [set waiting-time waiting-time + 1]
-  ;;]
+
+  ;; ACCIONES
+
   ask waiters [
     let new-location 0
 
-    set delay delay - 1
+    set delay delay - 1                  ; Delay del mesero
     if delay = 0 [ set color blue]
 
-    ifelse empty? path
+    ifelse empty? path                   ; Siguiente posicion del mesero
     [
       set new-location one-of [link-neighbors] of location
       move-to new-location
       set location new-location
     ]
     [
-      let p first path
-      ;;show p
-      ;;show path
-      ifelse is-list? p
-      [
-        let l one-of p
-        set new-location l
+      let destination first path
+      let routes [link-neighbors] of location
+      set routes routes with [pcolor != black]
+      set new-location min-one-of routes [distance destination]
+      face new-location
+      set location new-location
+      fd 1
+
+      if [patch-here] of location = [patch-here] of destination [
         set path remove-item 0 path
-        move-to new-location
-        set location new-location
+        if [patch-here] of location = [patch-here] of client-id [
+          output-print (word "Mesero en (" xcor " " ycor ") está llevando la orden.")
+          ask clients-on location
+          [
+            output-print (word "Cliente en (" xcor " " ycor ") fue atendido y quedó satisfecho.")
+            set color white
+            set is-done true
+          ]
+        ]
+      ]
+
+    ]
+  ]
+
+  ask clients [
+    ifelse not is-done [ ; 1. El cliente no ha terminado (o su comida o de esperar)
+      ifelse is-waiting [
+        set time time + 1                      ; Actualizando el tiempo
+        set label precision (time / 60) 2
+
+        if color = red [                       ; Eliminando el cliente
+          output-print (word "Cliente en (" xcor " " ycor ") no fue atendido y quedó insatisfecho.")
+          set is-done true
+        ]
+
+        ifelse time >  waiting-threshold        ; Actualizando el color basado en el tiempo y el threshold
+        [ set color red ]
+        [ ifelse time > (waiting-threshold / 2)
+          [set color (yellow - 2)]
+          [set color lime]
+        ]
       ]
       [
-        set new-location p
-        set path remove-item 0 path
-        move-to new-location
+        let destination assigned-table
+        let routes [link-neighbors] of location
+        set routes routes with [pcolor != black]
+        let new-location min-one-of routes [distance destination]
+        face new-location
         set location new-location
+        fd 1
+
+        if [patch-here] of location = [patch-here] of assigned-table [
+          output-print (word "El cliente en (" xcor " " ycor ") está esperando al mesero...")
+          set is-waiting True
+        ]
+      ]
+    ]
+    [ ; 2. Una vez terminada la espera, ir a la entrada
+      let destination entry-point
+      let routes [link-neighbors] of location
+      set routes routes with [pcolor != black]
+      let new-location min-one-of routes [distance destination]
+      face new-location
+      set location new-location
+      fd 1
+
+      if [patch-here] of location = [patch-here] of destination [
+        ifelse time < waiting-threshold [
+          set happy-clients happy-clients + 1
+        ]
+        [
+          set unhappy-clients unhappy-clients + 1
+        ]
+        set total-waiting-time lput time total-waiting-time
+        die
       ]
     ]
   ]
-  ask clients [
-    set waiting-time waiting-time - 1
-    set time time + 1
 
-    ifelse time >  waiting-threshold [set color red]
-    [ifelse time > (waiting-threshold / 2) [set color yellow]
-      [set color lime]]
+  ask chefs [
+    set delay delay - 1                      ; Actualizando el delay
+    if delay = 0 [set color white ]
 
-    if waiting-time = 0 [
-      ifelse food-ready = true [
-        die
-      ]
-      [
-        let poschef chef-id
-        let posclient one-of nodes-here
-        let length-wait 0
+    set working-time working-time - 1           ; Actualizando el tiempo de preparacion
+    if working-time < 0 [ set working-time 0 ]
+    set label precision (working-time / 60) 2
 
+    let poschef one-of nodes-here                    ; Movimiento del mesero
+    let adjacent [link-neighbors] of location
+    set adjacent adjacent with [pcolor = (gray - 1)]
+    let new-location one-of adjacent
+    move-to new-location
+    set location new-location
+
+    if not empty? time-clients [                           ; Lista de tiempo prepación
+      let timeclient first time-clients
+      let posclient first pos-clients
+
+      ifelse timeclient = 0 [                             ; Verificar si el plato esta listo
         let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
         ask w [
           set orders orders + 1
           set label orders
-          let poswaiter one-of nodes-here
+          set client-id posclient
 
-          let path1 path-from-to poswaiter poschef
-          foreach path1 [x -> set path lput x path]
-
-          let path2 path-from-to poschef posclient
-          foreach path2 [x -> set path lput x path]
-
-          ;;foreach range time-to-prepare [x -> set path lput poschef path]
-
-          ;;let path3 path-from-to poschef posclient
-          ;;foreach path3 [x -> set path lput x path]
-
-          set length-wait length path
-
+          set path lput waiter-area path
+          set path lput poschef path
+          set path lput waiter-area path
+          set path lput posclient path
         ]
-        let total-time (length-wait + time-go)
-        ifelse total-time >= waiting-threshold
-        [ set unhappy-clients unhappy-clients + 1 ]
-        [ set happy-clients happy-clients + 1 ]
-
-        set total-waiting-time lput  total-time total-waiting-time
-        set waiting-time length-wait
-        set food-ready true
+        set time-clients remove-item 0 time-clients
+        set pos-clients remove-item 0 pos-clients
+        output-print (word "¡El chef en (" xcor " " ycor  ") tiene la orden lista! Esperando al mesero...")
+      ]
+      [
+        set time-clients replace-item 0 time-clients (timeclient - 1)
       ]
     ]
-
-    set label precision (time / 60) 2
-    set label-color black
   ]
-
-  ask chefs [
-    set working-time working-time - 1
-    set delay delay - 1
-    if delay = 0 [set color white ]
-    if working-time < 0 [ set working-time 0 ]
-    set label precision (working-time / 60) 2
-  ]
+  update-plot ; Histograma de tiempo de espera
   tick
-end
-
-to-report path-from-to [source target]
-  let p []
-  ask source [
-
-    set p nw:turtles-on-path-to target
-  ]
-  report p
 end
 
 to-report get-waiting-time
@@ -418,8 +440,21 @@ to-report get-waiting-time
   ]
 end
 
+to update-plot
+  set-current-plot "Histograma del tiempo de espera"
+  let total-waiting-time-minutes map [i -> round (i / 60)] total-waiting-time
+
+  histogram total-waiting-time-minutes
+
+  if not empty? total-waiting-time-minutes [
+    let maxbar modes total-waiting-time-minutes
+    let maxrange length filter [ the-item -> the-item = item 0 maxbar ] total-waiting-time-minutes
+    set-plot-y-range 0 max list 10 maxrange
+  ]
+end
+
 to-report get-hours
-  report floor (ticks / 3600)
+  report floor 10 + (ticks / 3600)
 end
 
 to-report get-minutes
@@ -438,15 +473,67 @@ to-report get-satisfaction
   [report 0]
   [report 100 * (happy-clients / (happy-clients + unhappy-clients))]
 end
+
+to load-from-url [my-url]
+  clear-all
+
+  ; For NetLogo Web, use the Asynchronous load.
+  fetch:url-async my-url [
+    contents ->
+    set patch-data parse-map-info contents
+
+    foreach patch-data [ three-tuple ->
+      ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
+    ]
+    display
+  ]
+end
+
+to load-locally
+  clear-all
+
+  ifelse Version-Web [
+    ; For NetLogo Web, use the Asynchronous load.
+    fetch:user-file-async [
+      contents ->
+      set patch-data parse-map-info contents
+      foreach patch-data [ three-tuple ->
+        ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
+      ]
+      display
+    ]
+  ]
+  [
+    ; For NetLogo Desktop, use the Synchronous load.
+    set patch-data parse-map-info fetch:user-file
+    foreach patch-data [ three-tuple ->
+      ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
+    ]
+    display
+  ]
+end
+
+to-report parse-map-info [mapStr]
+  let result []
+  let lst read-from-string mapStr
+
+  let i 0
+  while [i < length lst] [
+    set result lput (sentence item i lst item (i + 1) lst item (i + 2) lst) result
+    set i i + 3
+  ]
+
+  report result
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-57
-182
-1685
-1811
+32
+314
+539
+822
 -1
 -1
-20.0
+19.96
 1
 14
 1
@@ -456,10 +543,10 @@ GRAPHICS-WINDOW
 0
 0
 1
--40
-40
--40
-40
+-12
+12
+-12
+12
 0
 0
 1
@@ -467,10 +554,10 @@ ticks
 30.0
 
 INPUTBOX
-43
-22
-135
-82
+47
+133
+139
+193
 Meseros
 4.0
 1
@@ -478,36 +565,36 @@ Meseros
 Number
 
 INPUTBOX
-139
-22
-231
-82
+143
+133
+235
+193
 Cocineros
-3.0
+5.0
 1
 0
 Number
 
 SLIDER
-240
-22
-412
-55
+1180
+59
+1213
+261
 Intervalo-Clientes
 Intervalo-Clientes
 0
-10
-5.0
-0.1
+60
+32.0
+5
 1
 min
-HORIZONTAL
+VERTICAL
 
 BUTTON
-430
-76
-511
-109
+423
+60
+508
+132
 Inicializar
 setup
 NIL
@@ -521,10 +608,10 @@ NIL
 1
 
 BUTTON
-431
-120
-503
-153
+425
+138
+509
+206
 Simular
 go
 T
@@ -538,24 +625,146 @@ NIL
 1
 
 MONITOR
-549
-10
-749
-55
+516
+60
+716
+105
 Tiempo promedio de espera (min)
 get-waiting-time
 5
 1
 11
 
-PLOT
-548
-55
-748
+MONITOR
+62
+245
+112
+290
+Hrs
+get-hours
+0
+1
+11
+
+MONITOR
+110
+245
+160
+290
+Min
+get-minutes
+0
+1
+11
+
+MONITOR
+159
+245
+209
+290
+Seg
+get-seconds
+0
+1
+11
+
+MONITOR
+728
+61
+869
+106
+Clientes satisfechos
+happy-clients
+0
+1
+11
+
+MONITOR
+879
+60
+1019
+105
+Clientes no satisfechos
+unhappy-clients
+17
+1
+11
+
+SLIDER
+240
+133
+412
+166
+Intervalo-Pausa
+Intervalo-Pausa
+0
+60
+15.0
+5
+1
+min
+HORIZONTAL
+
+MONITOR
+1031
+60
+1170
+105
+% Clientes satisfechos
+get-satisfaction
+2
+1
+11
+
+SWITCH
+48
+200
+233
+233
+Feriado-Fin-de-Semana
+Feriado-Fin-de-Semana
+0
+1
+-1000
+
+SLIDER
+239
+209
+412
+242
+Umbral-tiempo-espera
+Umbral-tiempo-espera
+0
+100
+100.0
+2
+1
+min
+HORIZONTAL
+
+SLIDER
+240
+172
+411
 205
-Trabajo total por tiempo transcurrido
-Tiempo
-Trabajo total
+Tiempo-preparacion
+Tiempo-preparacion
+0
+100
+34.0
+2
+1
+min
+HORIZONTAL
+
+PLOT
+515
+111
+866
+261
+Histograma del tiempo de espera
+NIL
+NIL
 0.0
 10.0
 0.0
@@ -564,15 +773,111 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot (sum [waiting-time] of clients) / 60"
+"PenTiempo" 1.0 1 -7500403 true "" ""
+
+PLOT
+876
+111
+1169
+261
+Cantidad clientes
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count clients"
+
+TEXTBOX
+50
+109
+195
+128
+Parámetros iniciales
+14
+0.0
+1
+
+TEXTBOX
+423
+16
+573
+51
+Ejecutar \nsimulación
+14
+0.0
+1
+
+TEXTBOX
+516
+17
+666
+35
+Métricas de evaluación
+14
+0.0
+1
+
+OUTPUT
+675
+314
+1213
+953
+10
+
+TEXTBOX
+280
+293
+392
+328
+Entorno
+14
+0.0
+1
+
+TEXTBOX
+835
+289
+1165
+337
+Registro de eventos
+14
+0.0
+1
+
+TEXTBOX
+44
+13
+233
+48
+Carga de mapa
+14
+0.0
+1
+
+INPUTBOX
+44
+41
+261
+101
+Recurso-URL
+NIL
+1
+0
+String
 
 BUTTON
-430
-32
-531
-65
-Cargar mapa
-loadMap
+271
+51
+411
+85
+Cargar Recurso
+load-from-url Recurso-URL
 NIL
 1
 T
@@ -583,96 +888,33 @@ NIL
 NIL
 1
 
-MONITOR
-58
-134
-108
-179
-Hrs
-get-hours
-0
+BUTTON
+271
+90
+412
+124
+Cargar Archivo
+load-locally
+NIL
 1
-11
-
-MONITOR
-106
-134
-156
-179
-Min
-get-minutes
-0
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
 1
-11
 
-MONITOR
-155
-134
-205
-179
-Seg
-get-seconds
-0
-1
-11
-
-MONITOR
-768
-11
-909
-56
-Clientes satisfechos
-happy-clients
-0
-1
-11
-
-MONITOR
-768
-58
-908
-103
-Clientes no satisfechos
-unhappy-clients
-17
-1
-11
-
-SLIDER
-241
-67
+SWITCH
+304
+13
 413
-100
-Intervalo-Demora
-Intervalo-Demora
-0
-60
-5.0
-5
+46
+Version-Web
+Version-Web
 1
-min
-HORIZONTAL
-
-MONITOR
-769
-105
-908
-150
-% Clientes satisfechos
-get-satisfaction
-2
 1
-11
-
-CHOOSER
-240
-111
-413
-156
-Mapa
-Mapa
-0 1 2
-2
+-1000
 
 @#$#@#$#@
 ## ¿QUÉ ES?
