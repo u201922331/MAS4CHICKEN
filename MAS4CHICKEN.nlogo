@@ -84,9 +84,24 @@ to setup
   ask turtles [die]          ; Limpieza de agente
   clear-plot
 
-  set MESEROS   max list 1 MESEROS   ; Validar parámetros iniciales
-  set COCINEROS max list 1 COCINEROS
+  ; Validar parámetros iniciales
 
+  if MESEROS < 1 [
+    user-message (word "El número de meseros es menor al límite permitido de 1, por lo que será ajustado automáticamente a un mínimo de 1 mesero.")
+    set MESEROS 1
+  ]
+  if COCINEROS < 1 [
+    user-message (word "El número de cocineros es menor al límite permitido de 1, por lo que será ajustado automáticamente a un mínimo de 1 cocinero.")
+    set COCINEROS 1
+  ]
+  if MESEROS > 20 [
+    user-message (word "El número de meseros excede el límite permitido de 20, por lo que será ajustado automáticamente a un máximo de 20 meseros.")
+    set MESEROS 20
+  ]
+  if COCINEROS > 20 [
+    user-message (word "El número de cocineros excede el límite permitido de 20, por lo que será ajustado automáticamente a un máximo de 20 cocineros.")
+    set COCINEROS 20
+  ]
   ; Colores
   let border-patches black
 
@@ -307,8 +322,8 @@ to go
       if [patch-here] of location = [patch-here] of destination [
         set path remove-item 0 path
         if [patch-here] of location = [patch-here] of client-id [
-          ; PATCH TEMPORAL
-          ; TODO: Revisar por qué este output-print se repite varias veces.
+          ; PARCHE TEMPORAL
+          ; TODO: Revisar la causa de que el siguiente output-print se esté ejecutando múltiples veces.
           ; output-print (word "Mesero en (" xcor " " ycor ") está llevando la orden.")
           ask clients-on location
           [
@@ -550,7 +565,7 @@ INPUTBOX
 139
 193
 Meseros
-4.0
+1.0
 1
 0
 Number
@@ -561,7 +576,7 @@ INPUTBOX
 235
 193
 Cocineros
-5.0
+20.0
 1
 0
 Number
@@ -575,7 +590,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 60
-23.0
+15.0
 5
 1
 min
