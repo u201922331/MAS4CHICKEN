@@ -307,7 +307,9 @@ to go
       if [patch-here] of location = [patch-here] of destination [
         set path remove-item 0 path
         if [patch-here] of location = [patch-here] of client-id [
-          output-print (word "Mesero en (" xcor " " ycor ") está llevando la orden.")
+          ; PATCH TEMPORAL
+          ; TODO: Revisar por qué este output-print se repite varias veces.
+          ; output-print (word "Mesero en (" xcor " " ycor ") está llevando la orden.")
           ask clients-on location
           [
             output-print (word "Cliente en (" xcor " " ycor ") fue atendido y quedó satisfecho.")
@@ -573,7 +575,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 60
-24.0
+23.0
 5
 1
 min
