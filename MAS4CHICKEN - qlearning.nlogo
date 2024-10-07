@@ -272,15 +272,15 @@ to go
         [
           set quantity (random 3) + 1
           if quantity = 1                    ; Cliente individual
-          [ set waiting-threshold ((random 5) + Umbral-tiempo-espera) * 60
+          [ set waiting-threshold ((random 5) + Tiempo-espera-real) * 60
             set shape "client-icon"
           ]
           if quantity = 2                    ; Cliente pareja
-          [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.2) * 60
+          [ set waiting-threshold ((random 5) + Tiempo-espera-real * 1.2) * 60
             set shape "client-icon2"
           ]
           if quantity = 3                    ; Cliente familiar
-          [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.4) * 60
+          [ set waiting-threshold ((random 5) + Tiempo-espera-real * 1.4) * 60
             set shape "client-icon3"
           ]
           set time 0                         ; Iniciales
@@ -670,7 +670,7 @@ INPUTBOX
 139
 193
 Meseros
-6.0
+10.0
 1
 0
 Number
@@ -681,7 +681,7 @@ INPUTBOX
 235
 193
 Cocineros
-7.0
+5.0
 1
 0
 Number
@@ -695,7 +695,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 60
-14.0
+15.0
 5
 1
 min
@@ -810,7 +810,7 @@ Intervalo-Pausa
 Intervalo-Pausa
 0
 60
-25.0
+5.0
 5
 1
 min
@@ -841,13 +841,13 @@ Feriado-Fin-de-Semana
 SLIDER
 239
 209
-412
+418
 242
-Umbral-tiempo-espera
-Umbral-tiempo-espera
+Tiempo-espera-real
+Tiempo-espera-real
 0
 100
-100.0
+16.0
 2
 1
 min
@@ -862,7 +862,7 @@ Tiempo-preparacion
 Tiempo-preparacion
 0
 100
-34.0
+12.0
 2
 1
 min
@@ -1053,7 +1053,7 @@ Meseros-optimo
 Meseros-optimo
 0
 10
-6.0
+10.0
 1
 1
 NIL
@@ -1068,7 +1068,7 @@ Cocineros-optimo
 Cocineros-optimo
 0
 10
-7.0
+5.0
 1
 1
 NIL
