@@ -34,7 +34,8 @@ float symbol2col(char c) {
     case '#': return  0.0f; // Walls
     case '.': return  5.0f; // Staff
     case 'M': return 6.0f; // Staff main
-    case '=': return 35.0f; // Tables
+    case 'T': return 35.0f; // Tables
+    case '=': return 36.0f; // Tables
     case '*': return 65.0f; // Outside
     case '@': return 27.0f; // Client spawn
     case 'C': return  4.0f; // Cook spawn
@@ -52,7 +53,7 @@ std::pair<std::vector<std::vector<TileInfo>>, bool> loadMap(const std::string& p
         success = true;
         std::cout << "Parsing file: " << path << "\n";
 
-        int w, h;
+        int w, h, t;
         bool firstLine = false;
 
         std::string line;
@@ -60,7 +61,7 @@ std::pair<std::vector<std::vector<TileInfo>>, bool> loadMap(const std::string& p
         while (std::getline(file, line)) {
             if (!firstLine) {
                 std::stringstream ss(line);
-                ss >> w >> h;
+                ss >> w >> h >> t;
                 firstLine = true;
                 continue;
             }
