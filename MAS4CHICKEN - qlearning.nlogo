@@ -27,6 +27,7 @@ waiters-own [
   ;chef-id
   ;client-id
   location          ; posición del mesero
+  initial-location
   path              ; Lista de nodos de destino ej. punto central del mesero, cliente, cocinero, etc.
   orders
   delay             ; Delay del mesero (de 0 a 5 minutos)
@@ -59,6 +60,7 @@ globals [
   entrada-patches
   max-waiters
   max-chefs
+  max-clients        ; Maxima cantidad de clientes
   targetx
   targety
   iteracion
@@ -71,7 +73,7 @@ to-report bla
 end
 
 to setup
-  ;clear-all
+  clear-all
 
   set-current-plot "Ave Reward Per Episode"
   set-plot-y-range -10 10
@@ -92,14 +94,17 @@ to setup
   ]
 
   ; Cargar el mapa
-  ;set patch-data [[-12	12	0]	[-11	12	0]	[-10	12	0]	[-9	12	0]	[-8	12	0]	[-7	12	0]	[-6	12	0]	[-5	12	0]	[-4	12	0]	[-3	12	0]	[-2	12	0]	[-1	12	27]	[0	12	0]	[1	12	0]	[2	12	0]	[3	12	0]	[4	12	0]	[5	12	0]	[6	12	0]	[7	12	0]	[8	12	0]	[9	12	0]	[10	12	0]	[11	12	0]	[12	12	0]	[-12	11	0]	[-11	11	45]	[-10	11	45]	[-9	11	45]	[-8	11	45]	[-7	11	45]	[-6	11	45]	[-5	11	45]	[-4	11	45]	[-3	11	45]	[-2	11	45]	[-1	11	45]	[0	11	45]	[1	11	45]	[2	11	45]	[3	11	45]	[4	11	45]	[5	11	45]	[6	11	45]	[7	11	45]	[8	11	45]	[9	11	45]	[10	11	45]	[11	11	45]	[12	11	0]	[-12	10	0]	[-11	10	45]	[-10	10	45]	[-9	10	35]	[-8	10	35]	[-7	10	45]	[-6	10	45]	[-5	10	35]	[-4	10	35]	[-3	10	45]	[-2	10	45]	[-1	10	35]	[0	10	35]	[1	10	45]	[2	10	45]	[3	10	35]	[4	10	35]	[5	10	45]	[6	10	45]	[7	10	35]	[8	10	35]	[9	10	45]	[10	10	45]	[11	10	45]	[12	10	0]	[-12	9	0]	[-11	9	45]	[-10	9	45]	[-9	9	45]	[-8	9	45]	[-7	9	45]	[-6	9	45]	[-5	9	45]	[-4	9	45]	[-3	9	45]	[-2	9	45]	[-1	9	45]	[0	9	45]	[1	9	45]	[2	9	45]	[3	9	45]	[4	9	45]	[5	9	45]	[6	9	45]	[7	9	45]	[8	9	45]	[9	9	45]	[10	9	45]	[11	9	45]	[12	9	0]	[-12	8	0]	[-11	8	45]	[-10	8	45]	[-9	8	45]	[-8	8	45]	[-7	8	45]	[-6	8	45]	[-5	8	45]	[-4	8	45]	[-3	8	45]	[-2	8	45]	[-1	8	45]	[0	8	45]	[1	8	45]	[2	8	45]	[3	8	45]	[4	8	45]	[5	8	45]	[6	8	45]	[7	8	45]	[8	8	45]	[9	8	45]	[10	8	45]	[11	8	45]	[12	8	0]	[-12	7	0]	[-11	7	45]	[-10	7	45]	[-9	7	35]	[-8	7	35]	[-7	7	45]	[-6	7	45]	[-5	7	35]	[-4	7	35]	[-3	7	45]	[-2	7	45]	[-1	7	35]	[0	7	35]	[1	7	45]	[2	7	45]	[3	7	35]	[4	7	35]	[5	7	45]	[6	7	45]	[7	7	35]	[8	7	35]	[9	7	45]	[10	7	45]	[11	7	45]	[12	7	0]	[-12	6	0]	[-11	6	45]	[-10	6	45]	[-9	6	45]	[-8	6	45]	[-7	6	45]	[-6	6	45]	[-5	6	45]	[-4	6	45]	[-3	6	45]	[-2	6	45]	[-1	6	45]	[0	6	45]	[1	6	45]	[2	6	45]	[3	6	45]	[4	6	45]	[5	6	45]	[6	6	45]	[7	6	45]	[8	6	45]	[9	6	45]	[10	6	45]	[11	6	45]	[12	6	0]	[-12	5	0]	[-11	5	45]	[-10	5	45]	[-9	5	45]	[-8	5	45]	[-7	5	45]	[-6	5	45]	[-5	5	45]	[-4	5	45]	[-3	5	45]	[-2	5	45]	[-1	5	45]	[0	5	45]	[1	5	45]	[2	5	45]	[3	5	45]	[4	5	45]	[5	5	45]	[6	5	45]	[7	5	45]	[8	5	45]	[9	5	45]	[10	5	45]	[11	5	45]	[12	5	0]	[-12	4	0]	[-11	4	45]	[-10	4	45]	[-9	4	35]	[-8	4	35]	[-7	4	45]	[-6	4	45]	[-5	4	35]	[-4	4	35]	[-3	4	45]	[-2	4	45]	[-1	4	35]	[0	4	35]	[1	4	45]	[2	4	45]	[3	4	35]	[4	4	35]	[5	4	45]	[6	4	45]	[7	4	35]	[8	4	35]	[9	4	45]	[10	4	45]	[11	4	45]	[12	4	0]	[-12	3	0]	[-11	3	45]	[-10	3	45]	[-9	3	45]	[-8	3	45]	[-7	3	45]	[-6	3	45]	[-5	3	45]	[-4	3	45]	[-3	3	45]	[-2	3	45]	[-1	3	45]	[0	3	45]	[1	3	45]	[2	3	45]	[3	3	45]	[4	3	45]	[5	3	45]	[6	3	45]	[7	3	45]	[8	3	45]	[9	3	45]	[10	3	45]	[11	3	45]	[12	3	0]	[-12	2	0]	[-11	2	45]	[-10	2	45]	[-9	2	45]	[-8	2	45]	[-7	2	45]	[-6	2	45]	[-5	2	45]	[-4	2	45]	[-3	2	45]	[-2	2	45]	[-1	2	45]	[0	2	45]	[1	2	45]	[2	2	45]	[3	2	45]	[4	2	45]	[5	2	45]	[6	2	45]	[7	2	45]	[8	2	45]	[9	2	45]	[10	2	45]	[11	2	45]	[12	2	0]	[-12	1	0]	[-11	1	45]	[-10	1	45]	[-9	1	35]	[-8	1	35]	[-7	1	45]	[-6	1	45]	[-5	1	35]	[-4	1	35]	[-3	1	45]	[-2	1	45]	[-1	1	35]	[0	1	35]	[1	1	45]	[2	1	45]	[3	1	35]	[4	1	35]	[5	1	45]	[6	1	45]	[7	1	35]	[8	1	35]	[9	1	45]	[10	1	45]	[11	1	45]	[12	1	0]	[-12	0	0]	[-11	0	45]	[-10	0	45]	[-9	0	45]	[-8	0	45]	[-7	0	45]	[-6	0	45]	[-5	0	45]	[-4	0	45]	[-3	0	45]	[-2	0	45]	[-1	0	45]	[0	0	45]	[1	0	45]	[2	0	45]	[3	0	45]	[4	0	45]	[5	0	45]	[6	0	45]	[7	0	45]	[8	0	45]	[9	0	45]	[10	0	45]	[11	0	45]	[12	0	0]	[-12	-1	0]	[-11	-1	45]	[-10	-1	45]	[-9	-1	45]	[-8	-1	45]	[-7	-1	45]	[-6	-1	45]	[-5	-1	45]	[-4	-1	45]	[-3	-1	45]	[-2	-1	45]	[-1	-1	45]	[0	-1	45]	[1	-1	45]	[2	-1	45]	[3	-1	45]	[4	-1	45]	[5	-1	45]	[6	-1	45]	[7	-1	45]	[8	-1	45]	[9	-1	45]	[10	-1	45]	[11	-1	45]	[12	-1	0]	[-12	-2	0]	[-11	-2	45]	[-10	-2	45]	[-9	-2	35]	[-8	-2	35]	[-7	-2	45]	[-6	-2	45]	[-5	-2	35]	[-4	-2	35]	[-3	-2	45]	[-2	-2	45]	[-1	-2	35]	[0	-2	35]	[1	-2	45]	[2	-2	45]	[3	-2	35]	[4	-2	35]	[5	-2	45]	[6	-2	45]	[7	-2	35]	[8	-2	35]	[9	-2	45]	[10	-2	45]	[11	-2	45]	[12	-2	0]	[-12	-3	0]	[-11	-3	45]	[-10	-3	45]	[-9	-3	45]	[-8	-3	45]	[-7	-3	45]	[-6	-3	45]	[-5	-3	45]	[-4	-3	45]	[-3	-3	45]	[-2	-3	45]	[-1	-3	45]	[0	-3	45]	[1	-3	45]	[2	-3	45]	[3	-3	45]	[4	-3	45]	[5	-3	45]	[6	-3	45]	[7	-3	45]	[8	-3	45]	[9	-3	45]	[10	-3	45]	[11	-3	45]	[12	-3	0]	[-12	-4	0]	[-11	-4	45]	[-10	-4	45]	[-9	-4	45]	[-8	-4	45]	[-7	-4	45]	[-6	-4	45]	[-5	-4	45]	[-4	-4	45]	[-3	-4	45]	[-2	-4	45]	[-1	-4	45]	[0	-4	45]	[1	-4	45]	[2	-4	45]	[3	-4	45]	[4	-4	45]	[5	-4	45]	[6	-4	45]	[7	-4	45]	[8	-4	45]	[9	-4	45]	[10	-4	45]	[11	-4	45]	[12	-4	0]	[-12	-5	0]	[-11	-5	45]	[-10	-5	45]	[-9	-5	45]	[-8	-5	45]	[-7	-5	45]	[-6	-5	45]	[-5	-5	45]	[-4	-5	45]	[-3	-5	45]	[-2	-5	45]	[-1	-5	45]	[0	-5	45]	[1	-5	45]	[2	-5	45]	[3	-5	45]	[4	-5	45]	[5	-5	45]	[6	-5	45]	[7	-5	45]	[8	-5	45]	[9	-5	45]	[10	-5	45]	[11	-5	45]	[12	-5	0]	[-12	-6	0]	[-11	-6	0]	[-10	-6	0]	[-9	-6	0]	[-8	-6	0]	[-7	-6	0]	[-6	-6	0]	[-5	-6	0]	[-4	-6	5]	[-3	-6	6]	[-2	-6	5]	[-1	-6	0]	[0	-6	0]	[1	-6	0]	[2	-6	0]	[3	-6	0]	[4	-6	0]	[5	-6	0]	[6	-6	0]	[7	-6	0]	[8	-6	0]	[9	-6	0]	[10	-6	0]	[11	-6	0]	[12	-6	0]	[-12	-7	0]	[-11	-7	5]	[-10	-7	5]	[-9	-7	5]	[-8	-7	5]	[-7	-7	5]	[-6	-7	5]	[-5	-7	5]	[-4	-7	5]	[-3	-7	5]	[-2	-7	5]	[-1	-7	5]	[0	-7	4]	[1	-7	4]	[2	-7	4]	[3	-7	4]	[4	-7	4]	[5	-7	4]	[6	-7	4]	[7	-7	4]	[8	-7	4]	[9	-7	4]	[10	-7	4]	[11	-7	4]	[12	-7	0]	[-12	-8	0]	[-11	-8	5]	[-10	-8	5]	[-9	-8	5]	[-8	-8	5]	[-7	-8	5]	[-6	-8	5]	[-5	-8	5]	[-4	-8	5]	[-3	-8	5]	[-2	-8	5]	[-1	-8	5]	[0	-8	4]	[1	-8	4]	[2	-8	4]	[3	-8	4]	[4	-8	4]	[5	-8	4]	[6	-8	4]	[7	-8	4]	[8	-8	4]	[9	-8	4]	[10	-8	4]	[11	-8	4]	[12	-8	0]	[-12	-9	0]	[-11	-9	5]	[-10	-9	5]	[-9	-9	5]	[-8	-9	5]	[-7	-9	5]	[-6	-9	5]	[-5	-9	5]	[-4	-9	5]	[-3	-9	5]	[-2	-9	5]	[-1	-9	5]	[0	-9	4]	[1	-9	4]	[2	-9	4]	[3	-9	4]	[4	-9	4]	[5	-9	4]	[6	-9	4]	[7	-9	4]	[8	-9	4]	[9	-9	4]	[10	-9	4]	[11	-9	4]	[12	-9	0]	[-12	-10	0]	[-11	-10	5]	[-10	-10	5]	[-9	-10	5]	[-8	-10	5]	[-7	-10	5]	[-6	-10	5]	[-5	-10	5]	[-4	-10	5]	[-3	-10	5]	[-2	-10	5]	[-1	-10	5]	[0	-10	4]	[1	-10	4]	[2	-10	4]	[3	-10	4]	[4	-10	4]	[5	-10	4]	[6	-10	4]	[7	-10	4]	[8	-10	4]	[9	-10	4]	[10	-10	4]	[11	-10	4]	[12	-10	0]	[-12	-11	0]	[-11	-11	5]	[-10	-11	5]	[-9	-11	5]	[-8	-11	5]	[-7	-11	5]	[-6	-11	5]	[-5	-11	5]	[-4	-11	5]	[-3	-11	5]	[-2	-11	5]	[-1	-11	5]	[0	-11	4]	[1	-11	4]	[2	-11	4]	[3	-11	4]	[4	-11	4]	[5	-11	4]	[6	-11	4]	[7	-11	4]	[8	-11	4]	[9	-11	4]	[10	-11	4]	[11	-11	4]	[12	-11	0]	[-12	-12	0]	[-11	-12	0]	[-10	-12	0]	[-9	-12	0]	[-8	-12	0]	[-7	-12	0]	[-6	-12	0]	[-5	-12	0]	[-4	-12	0]	[-3	-12	0]	[-2	-12	0]	[-1	-12	0]	[0	-12	0]	[1	-12	0]	[2	-12	0]	[3	-12	0]	[4	-12	0]	[5	-12	0]	[6	-12	0]	[7	-12	0]	[8	-12	0]	[9	-12	0]	[10	-12	0]	[11	-12	0]	[12	-12	0]]
-  ;foreach patch-data [ three-tuple ->
-  ;  ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
-  ;]
+  set patch-data [[-12	12	0]	[-11	12	0]	[-10	12	0]	[-9	12	0]	[-8	12	0]	[-7	12	0]	[-6	12	0]	[-5	12	0]	[-4	12	0]	[-3	12	0]	[-2	12	0]	[-1	12	27]	[0	12	0]	[1	12	0]	[2	12	0]	[3	12	0]	[4	12	0]	[5	12	0]	[6	12	0]	[7	12	0]	[8	12	0]	[9	12	0]	[10	12	0]	[11	12	0]	[12	12	0]	[-12	11	0]	[-11	11	45]	[-10	11	45]	[-9	11	45]	[-8	11	45]	[-7	11	45]	[-6	11	45]	[-5	11	45]	[-4	11	45]	[-3	11	45]	[-2	11	45]	[-1	11	45]	[0	11	45]	[1	11	45]	[2	11	45]	[3	11	45]	[4	11	45]	[5	11	45]	[6	11	45]	[7	11	45]	[8	11	45]	[9	11	45]	[10	11	45]	[11	11	45]	[12	11	0]	[-12	10	0]	[-11	10	45]	[-10	10	45]	[-9	10	35]	[-8	10	35]	[-7	10	45]	[-6	10	45]	[-5	10	35]	[-4	10	35]	[-3	10	45]	[-2	10	45]	[-1	10	35]	[0	10	35]	[1	10	45]	[2	10	45]	[3	10	35]	[4	10	35]	[5	10	45]	[6	10	45]	[7	10	35]	[8	10	35]	[9	10	45]	[10	10	45]	[11	10	45]	[12	10	0]	[-12	9	0]	[-11	9	45]	[-10	9	45]	[-9	9	45]	[-8	9	45]	[-7	9	45]	[-6	9	45]	[-5	9	45]	[-4	9	45]	[-3	9	45]	[-2	9	45]	[-1	9	45]	[0	9	45]	[1	9	45]	[2	9	45]	[3	9	45]	[4	9	45]	[5	9	45]	[6	9	45]	[7	9	45]	[8	9	45]	[9	9	45]	[10	9	45]	[11	9	45]	[12	9	0]	[-12	8	0]	[-11	8	45]	[-10	8	45]	[-9	8	45]	[-8	8	45]	[-7	8	45]	[-6	8	45]	[-5	8	45]	[-4	8	45]	[-3	8	45]	[-2	8	45]	[-1	8	45]	[0	8	45]	[1	8	45]	[2	8	45]	[3	8	45]	[4	8	45]	[5	8	45]	[6	8	45]	[7	8	45]	[8	8	45]	[9	8	45]	[10	8	45]	[11	8	45]	[12	8	0]	[-12	7	0]	[-11	7	45]	[-10	7	45]	[-9	7	35]	[-8	7	35]	[-7	7	45]	[-6	7	45]	[-5	7	35]	[-4	7	35]	[-3	7	45]	[-2	7	45]	[-1	7	35]	[0	7	35]	[1	7	45]	[2	7	45]	[3	7	35]	[4	7	35]	[5	7	45]	[6	7	45]	[7	7	35]	[8	7	35]	[9	7	45]	[10	7	45]	[11	7	45]	[12	7	0]	[-12	6	0]	[-11	6	45]	[-10	6	45]	[-9	6	45]	[-8	6	45]	[-7	6	45]	[-6	6	45]	[-5	6	45]	[-4	6	45]	[-3	6	45]	[-2	6	45]	[-1	6	45]	[0	6	45]	[1	6	45]	[2	6	45]	[3	6	45]	[4	6	45]	[5	6	45]	[6	6	45]	[7	6	45]	[8	6	45]	[9	6	45]	[10	6	45]	[11	6	45]	[12	6	0]	[-12	5	0]	[-11	5	45]	[-10	5	45]	[-9	5	45]	[-8	5	45]	[-7	5	45]	[-6	5	45]	[-5	5	45]	[-4	5	45]	[-3	5	45]	[-2	5	45]	[-1	5	45]	[0	5	45]	[1	5	45]	[2	5	45]	[3	5	45]	[4	5	45]	[5	5	45]	[6	5	45]	[7	5	45]	[8	5	45]	[9	5	45]	[10	5	45]	[11	5	45]	[12	5	0]	[-12	4	0]	[-11	4	45]	[-10	4	45]	[-9	4	35]	[-8	4	35]	[-7	4	45]	[-6	4	45]	[-5	4	35]	[-4	4	35]	[-3	4	45]	[-2	4	45]	[-1	4	35]	[0	4	35]	[1	4	45]	[2	4	45]	[3	4	35]	[4	4	35]	[5	4	45]	[6	4	45]	[7	4	35]	[8	4	35]	[9	4	45]	[10	4	45]	[11	4	45]	[12	4	0]	[-12	3	0]	[-11	3	45]	[-10	3	45]	[-9	3	45]	[-8	3	45]	[-7	3	45]	[-6	3	45]	[-5	3	45]	[-4	3	45]	[-3	3	45]	[-2	3	45]	[-1	3	45]	[0	3	45]	[1	3	45]	[2	3	45]	[3	3	45]	[4	3	45]	[5	3	45]	[6	3	45]	[7	3	45]	[8	3	45]	[9	3	45]	[10	3	45]	[11	3	45]	[12	3	0]	[-12	2	0]	[-11	2	45]	[-10	2	45]	[-9	2	45]	[-8	2	45]	[-7	2	45]	[-6	2	45]	[-5	2	45]	[-4	2	45]	[-3	2	45]	[-2	2	45]	[-1	2	45]	[0	2	45]	[1	2	45]	[2	2	45]	[3	2	45]	[4	2	45]	[5	2	45]	[6	2	45]	[7	2	45]	[8	2	45]	[9	2	45]	[10	2	45]	[11	2	45]	[12	2	0]	[-12	1	0]	[-11	1	45]	[-10	1	45]	[-9	1	35]	[-8	1	35]	[-7	1	45]	[-6	1	45]	[-5	1	35]	[-4	1	35]	[-3	1	45]	[-2	1	45]	[-1	1	35]	[0	1	35]	[1	1	45]	[2	1	45]	[3	1	35]	[4	1	35]	[5	1	45]	[6	1	45]	[7	1	35]	[8	1	35]	[9	1	45]	[10	1	45]	[11	1	45]	[12	1	0]	[-12	0	0]	[-11	0	45]	[-10	0	45]	[-9	0	45]	[-8	0	45]	[-7	0	45]	[-6	0	45]	[-5	0	45]	[-4	0	45]	[-3	0	45]	[-2	0	45]	[-1	0	45]	[0	0	45]	[1	0	45]	[2	0	45]	[3	0	45]	[4	0	45]	[5	0	45]	[6	0	45]	[7	0	45]	[8	0	45]	[9	0	45]	[10	0	45]	[11	0	45]	[12	0	0]	[-12	-1	0]	[-11	-1	45]	[-10	-1	45]	[-9	-1	45]	[-8	-1	45]	[-7	-1	45]	[-6	-1	45]	[-5	-1	45]	[-4	-1	45]	[-3	-1	45]	[-2	-1	45]	[-1	-1	45]	[0	-1	45]	[1	-1	45]	[2	-1	45]	[3	-1	45]	[4	-1	45]	[5	-1	45]	[6	-1	45]	[7	-1	45]	[8	-1	45]	[9	-1	45]	[10	-1	45]	[11	-1	45]	[12	-1	0]	[-12	-2	0]	[-11	-2	45]	[-10	-2	45]	[-9	-2	35]	[-8	-2	35]	[-7	-2	45]	[-6	-2	45]	[-5	-2	35]	[-4	-2	35]	[-3	-2	45]	[-2	-2	45]	[-1	-2	35]	[0	-2	35]	[1	-2	45]	[2	-2	45]	[3	-2	35]	[4	-2	35]	[5	-2	45]	[6	-2	45]	[7	-2	35]	[8	-2	35]	[9	-2	45]	[10	-2	45]	[11	-2	45]	[12	-2	0]	[-12	-3	0]	[-11	-3	45]	[-10	-3	45]	[-9	-3	45]	[-8	-3	45]	[-7	-3	45]	[-6	-3	45]	[-5	-3	45]	[-4	-3	45]	[-3	-3	45]	[-2	-3	45]	[-1	-3	45]	[0	-3	45]	[1	-3	45]	[2	-3	45]	[3	-3	45]	[4	-3	45]	[5	-3	45]	[6	-3	45]	[7	-3	45]	[8	-3	45]	[9	-3	45]	[10	-3	45]	[11	-3	45]	[12	-3	0]	[-12	-4	0]	[-11	-4	45]	[-10	-4	45]	[-9	-4	45]	[-8	-4	45]	[-7	-4	45]	[-6	-4	45]	[-5	-4	45]	[-4	-4	45]	[-3	-4	45]	[-2	-4	45]	[-1	-4	45]	[0	-4	45]	[1	-4	45]	[2	-4	45]	[3	-4	45]	[4	-4	45]	[5	-4	45]	[6	-4	45]	[7	-4	45]	[8	-4	45]	[9	-4	45]	[10	-4	45]	[11	-4	45]	[12	-4	0]	[-12	-5	0]	[-11	-5	45]	[-10	-5	45]	[-9	-5	45]	[-8	-5	45]	[-7	-5	45]	[-6	-5	45]	[-5	-5	45]	[-4	-5	45]	[-3	-5	45]	[-2	-5	45]	[-1	-5	45]	[0	-5	45]	[1	-5	45]	[2	-5	45]	[3	-5	45]	[4	-5	45]	[5	-5	45]	[6	-5	45]	[7	-5	45]	[8	-5	45]	[9	-5	45]	[10	-5	45]	[11	-5	45]	[12	-5	0]	[-12	-6	0]	[-11	-6	0]	[-10	-6	0]	[-9	-6	0]	[-8	-6	0]	[-7	-6	0]	[-6	-6	0]	[-5	-6	0]	[-4	-6	5]	[-3	-6	6]	[-2	-6	5]	[-1	-6	0]	[0	-6	0]	[1	-6	0]	[2	-6	0]	[3	-6	0]	[4	-6	0]	[5	-6	0]	[6	-6	0]	[7	-6	0]	[8	-6	0]	[9	-6	0]	[10	-6	0]	[11	-6	0]	[12	-6	0]	[-12	-7	0]	[-11	-7	5]	[-10	-7	5]	[-9	-7	5]	[-8	-7	5]	[-7	-7	5]	[-6	-7	5]	[-5	-7	5]	[-4	-7	5]	[-3	-7	5]	[-2	-7	5]	[-1	-7	5]	[0	-7	4]	[1	-7	4]	[2	-7	4]	[3	-7	4]	[4	-7	4]	[5	-7	4]	[6	-7	4]	[7	-7	4]	[8	-7	4]	[9	-7	4]	[10	-7	4]	[11	-7	4]	[12	-7	0]	[-12	-8	0]	[-11	-8	5]	[-10	-8	5]	[-9	-8	5]	[-8	-8	5]	[-7	-8	5]	[-6	-8	5]	[-5	-8	5]	[-4	-8	5]	[-3	-8	5]	[-2	-8	5]	[-1	-8	5]	[0	-8	4]	[1	-8	4]	[2	-8	4]	[3	-8	4]	[4	-8	4]	[5	-8	4]	[6	-8	4]	[7	-8	4]	[8	-8	4]	[9	-8	4]	[10	-8	4]	[11	-8	4]	[12	-8	0]	[-12	-9	0]	[-11	-9	5]	[-10	-9	5]	[-9	-9	5]	[-8	-9	5]	[-7	-9	5]	[-6	-9	5]	[-5	-9	5]	[-4	-9	5]	[-3	-9	5]	[-2	-9	5]	[-1	-9	5]	[0	-9	4]	[1	-9	4]	[2	-9	4]	[3	-9	4]	[4	-9	4]	[5	-9	4]	[6	-9	4]	[7	-9	4]	[8	-9	4]	[9	-9	4]	[10	-9	4]	[11	-9	4]	[12	-9	0]	[-12	-10	0]	[-11	-10	5]	[-10	-10	5]	[-9	-10	5]	[-8	-10	5]	[-7	-10	5]	[-6	-10	5]	[-5	-10	5]	[-4	-10	5]	[-3	-10	5]	[-2	-10	5]	[-1	-10	5]	[0	-10	4]	[1	-10	4]	[2	-10	4]	[3	-10	4]	[4	-10	4]	[5	-10	4]	[6	-10	4]	[7	-10	4]	[8	-10	4]	[9	-10	4]	[10	-10	4]	[11	-10	4]	[12	-10	0]	[-12	-11	0]	[-11	-11	5]	[-10	-11	5]	[-9	-11	5]	[-8	-11	5]	[-7	-11	5]	[-6	-11	5]	[-5	-11	5]	[-4	-11	5]	[-3	-11	5]	[-2	-11	5]	[-1	-11	5]	[0	-11	4]	[1	-11	4]	[2	-11	4]	[3	-11	4]	[4	-11	4]	[5	-11	4]	[6	-11	4]	[7	-11	4]	[8	-11	4]	[9	-11	4]	[10	-11	4]	[11	-11	4]	[12	-11	0]	[-12	-12	0]	[-11	-12	0]	[-10	-12	0]	[-9	-12	0]	[-8	-12	0]	[-7	-12	0]	[-6	-12	0]	[-5	-12	0]	[-4	-12	0]	[-3	-12	0]	[-2	-12	0]	[-1	-12	0]	[0	-12	0]	[1	-12	0]	[2	-12	0]	[3	-12	0]	[4	-12	0]	[5	-12	0]	[6	-12	0]	[7	-12	0]	[8	-12	0]	[9	-12	0]	[10	-12	0]	[11	-12	0]	[12	-12	0]]
+  foreach patch-data [ three-tuple ->
+    ask patch first three-tuple item 1 three-tuple [ set pcolor last three-tuple ]
+  ]
 
   let border-patches black
   set polleria-patches patches with [pcolor = yellow]   ; Parcelas del patio de comida
   set mesas-patches patches with [pcolor = brown]       ; Parcelas de las mesas
+  set max-clients (count mesas-patches)                 ; Maxima cantidad de clientes es la máxima cantidad de mesas
+  ask patches with [pcolor = (brown + 1)] [set pcolor brown] ; Diseño
+
   set cocina-patches patches with [pcolor = (gray - 1)] ; Parcelas de la zona de cocina
   set staff-patches patches with [pcolor = gray]        ; Parcelas de la zona de meseros
   set staff-main-patch patches with [pcolor = (gray + 1)]
@@ -107,20 +112,22 @@ to setup
   ;set-patch-size 20
 
   ask patches with [pcolor != border-patches] [ sprout-nodes 1]    ; Agente nodo
-  ask nodes [ create-links-with nodes-on neighbors4]
   ask nodes [
+    create-links-with nodes-on neighbors4
     set hidden? true
   ]
 
   create-turtles 1 [                      ; Punto central del mesero
-    set xcor -3
-    set ycor -6
     set hidden? true
     move-to one-of staff-main-patch
     set waiter-area one-of nodes-here
   ]
 
-  ask patch (1 + random MESEROS) (1 + random COCINEROS) [sprout-walkers 1 [set color yellow set hidden? True]]
+  ask patch (1 + random MESEROS) (1 + random COCINEROS) [
+    sprout-walkers 1 [set color yellow set hidden? True]
+    set Meseros-optimo pxcor
+    set Cocineros-optimo pycor
+  ]
 
   ask Walkers [
     qlearningextension:state-def-extra ["xcor" "ycor"] [bla]
@@ -143,15 +150,6 @@ end
 
 to go
   set iteracion (iteracion + 1)
-
-  ask Walkers [
-    qlearningextension:learning
-    print(qlearningextension:get-qtable)
-    show (word "xcor:" xcor "ycor:" ycor)
-    set Meseros-optimo xcor
-    set Cocineros-optimo ycor
-  ]
-  if end-learning = true [stop]
 
   reset-ticks
   set total-waiting-time []  ; Variables iniciales
@@ -184,7 +182,7 @@ to go
   let border-patches black
 
 
-    create-waiters Meseros-optimo [               ; Agente mesero (waiter)
+  create-waiters Meseros-optimo [               ; Agente mesero (waiter)
     set shape "waiter-icon3"             ; Iniciales
     set color blue
     set size 2
@@ -192,6 +190,7 @@ to go
     set label-color black
     move-to one-of staff-patches         ; Posicion
     set location one-of nodes-here
+    set initial-location location
 
     set path []
     set delay 0
@@ -223,13 +222,13 @@ to go
 
   reset-ticks
 
-  while [ticks < 60 * 60] [
-    if ticks = 20 * 60 [                                              ; Simular distribución normal (1pm hora pico)
-      ifelse Feriado-Fin-de-Semana = True                                 ; Simular día feriado o fin de semana
+  while [ticks < 2 * 60 * 60] [
+    if ticks = 60 * 60 [                                              ; Simular distribución normal (1pm hora pico)
+       ifelse Feriado-Fin-de-Semana = True                                 ; Simular día feriado o fin de semana
       [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.10))]
       [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES - (INTERVALO-CLIENTES * 0.05))]
     ]
-    if ticks = 40 * 60 [
+    if ticks = 90 * 60 [
       ifelse Feriado-Fin-de-Semana = True
       [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.10))]
       [set INTERVALO-CLIENTES round (INTERVALO-CLIENTES + (INTERVALO-CLIENTES * 0.05))]
@@ -237,11 +236,13 @@ to go
 
 
     if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [        ; Creación del cliente
-      ask one-of entrada-patches [
+      let current-clients (count clients)
+      if current-clients < max-clients [
+        ask one-of entrada-patches [
         let postable 0
         let poschef 0
 
-        ask one-of mesas-patches [
+        ask one-of mesas-patches with [not any? clients-here] [
           set postable one-of nodes-here
 
           let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
@@ -260,9 +261,10 @@ to go
               set time-clients lput food-time time-clients
             ]
             set path lput waiter-area path
-            set path lput postable path
+            (foreach range (2 * 60) [ set path lput postable path])
+
             set path lput waiter-area path
-            set path lput poschef path
+            (foreach range 30 [ set path lput poschef path])
             set path lput waiter-area path
 
             output-print (word "Mesero tomando la orden del cliente en (" xcor " " ycor ")")
@@ -302,6 +304,7 @@ to go
           output-print (word "Llegó un cliente en (" xcor " " ycor ").")
         ]
       ]
+    ]
     ]
 
     if remainder (ticks + 1) (INTERVALO-PAUSA * 60) = 0 [ ; Pausa del chef y mesero
@@ -472,17 +475,34 @@ to go
     tick
   ]
   if end-learning = true [stop]
+
+  ask Walkers [
+    qlearningextension:learning
+    print(qlearningextension:get-qtable)
+    show (word "xcor:" xcor "ycor:" ycor)
+    set Meseros-optimo xcor
+    set Cocineros-optimo ycor
+  ]
+  if end-learning = true [stop]
 end
 
 
 to-report rewardFunc
-  let distance2 (-1 * ((abs (MESEROS - xcor)) + (abs (COCINEROS - ycor))))
-  set reward-list lput distance2 reward-list
-  report distance2
+  let w get-waiting-time
+  ifelse w = 0 [
+    set reward-list lput -100 reward-list
+    report -100
+  ]
+  [
+    set w (-1 * w)
+    set reward-list lput w reward-list
+    report w
+  ]
+
 end
 
 to goUp
-  if ycor + 1 != max-chefs + 1  [
+  if ycor + 1 != COCINEROS + 1  [
     set heading 0
     fd 1
   ]
@@ -503,15 +523,15 @@ to goLeft
 end
 
 to goRight
-  if xcor + 1 != max-waiters + 1 [
+  if xcor + 1 != MESEROS + 1 [
     set heading 90
     fd 1
   ]
 end
 
 to-report isEndState
-  if xcor = MESEROS and ycor = COCINEROS [
-    if iteracion > 1000 [ set end-learning true ]
+  if get-waiting-time < Tiempo-espera-real [
+    if iteracion > 500 [ set end-learning true ]
     report true
   ]
   report false
@@ -670,7 +690,7 @@ INPUTBOX
 139
 193
 Meseros
-10.0
+2.0
 1
 0
 Number
@@ -681,31 +701,31 @@ INPUTBOX
 235
 193
 Cocineros
-5.0
+2.0
 1
 0
 Number
 
 SLIDER
-1180
-59
-1213
-261
+425
+15
+458
+217
 Intervalo-Clientes
 Intervalo-Clientes
 0
-60
-15.0
-5
+30
+10.0
+1
 1
 min
 VERTICAL
 
 BUTTON
-423
-60
-508
-132
+475
+56
+560
+128
 Inicializar
 setup
 NIL
@@ -719,10 +739,10 @@ NIL
 1
 
 BUTTON
-425
-138
-509
-206
+477
+134
+561
+202
 Simular
 go
 T
@@ -736,10 +756,10 @@ NIL
 1
 
 MONITOR
-516
-60
-716
-105
+568
+56
+768
+101
 Tiempo promedio de espera (min)
 get-waiting-time
 5
@@ -780,10 +800,10 @@ get-seconds
 11
 
 MONITOR
-728
-61
-869
-106
+780
+57
+921
+102
 Clientes satisfechos
 happy-clients
 0
@@ -791,10 +811,10 @@ happy-clients
 11
 
 MONITOR
-879
-60
-1019
-105
+931
+56
+1071
+101
 Clientes no satisfechos
 unhappy-clients
 17
@@ -810,17 +830,17 @@ Intervalo-Pausa
 Intervalo-Pausa
 0
 60
-5.0
+10.0
 5
 1
 min
 HORIZONTAL
 
 MONITOR
-1031
-60
-1170
-105
+1083
+56
+1222
+101
 % Clientes satisfechos
 get-satisfaction
 2
@@ -846,9 +866,9 @@ SLIDER
 Tiempo-espera-real
 Tiempo-espera-real
 0
-100
-16.0
-2
+60
+14.0
+1
 1
 min
 HORIZONTAL
@@ -862,17 +882,17 @@ Tiempo-preparacion
 Tiempo-preparacion
 0
 100
-12.0
+10.0
 2
 1
 min
 HORIZONTAL
 
 PLOT
-515
-111
-866
-261
+567
+107
+918
+257
 Histograma del tiempo de espera
 NIL
 NIL
@@ -887,10 +907,10 @@ PENS
 "PenTiempo" 1.0 1 -7500403 true "" ""
 
 PLOT
-876
-111
-1169
-261
+928
+107
+1221
+257
 Cantidad clientes
 NIL
 NIL
@@ -915,20 +935,20 @@ Parámetros iniciales
 1
 
 TEXTBOX
-423
-16
-573
-51
+475
+12
+625
+47
 Ejecutar \nsimulación
 14
 0.0
 1
 
 TEXTBOX
-516
-17
-666
-35
+568
+13
+718
+31
 Métricas de evaluación
 14
 0.0
@@ -1028,10 +1048,10 @@ Version-Web
 -1000
 
 PLOT
-1226
-61
-1426
-211
+1235
+57
+1435
+207
 Ave Reward Per Episode
 NIL
 NIL
@@ -1053,32 +1073,32 @@ Meseros-optimo
 Meseros-optimo
 0
 10
-10.0
+2.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-430
-276
-602
-309
+482
+272
+654
+305
 Cocineros-optimo
 Cocineros-optimo
 0
-10
-5.0
+5
+2.0
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-631
-271
-756
-316
+683
+267
+808
+312
 Iteracion
 get-iteracion
 17
@@ -1756,6 +1776,44 @@ NetLogo 6.4.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="Intervalo-Demora">
       <value value="16"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="E1 - 10 casos" repetitions="10" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>get-waiting-time</metric>
+    <enumeratedValueSet variable="Tiempo-espera-real">
+      <value value="14"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Pausa">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Cocineros-optimo">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Cocineros">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Meseros">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tiempo-preparacion">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Meseros-optimo">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Version-Web">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Intervalo-Clientes">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Recurso-URL">
+      <value value="&quot;&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Feriado-Fin-de-Semana">
+      <value value="true"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>

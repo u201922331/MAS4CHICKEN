@@ -26,6 +26,7 @@ waiters-own [
   ;chef-id
   ;client-id
   location          ; posición del mesero
+  initial-location
   path              ; Lista de nodos de destino ej. punto central del mesero, cliente, cocinero, etc.
   orders
   delay             ; Delay del mesero (de 0 a 5 minutos)
@@ -53,6 +54,7 @@ globals [
   unhappy-clients    ; Cantidad de clientes insatisfechos
   waiter-area        ; Punto central del mesero
   entrada-patches
+  max-clients        ; Maxima cantidad de clientes
 ]
 
 to setup
@@ -97,6 +99,9 @@ to setup
   ; Asignación de parcelas específicas
   set polleria-patches patches with [pcolor = yellow]      ; Patio de comidas
   set mesas-patches patches with [pcolor = brown]          ; Mesas
+  set max-clients (count mesas-patches)
+  ask patches with [pcolor = (brown + 1)] [set pcolor brown]
+
   set cocina-patches patches with [pcolor = (gray - 1)]    ; Cocina(s)
   set staff-patches patches with [pcolor = gray]           ; Zona de meseros
   set staff-main-patch patches with [pcolor = (gray + 1)]  ; Punto de encuentro meseros
@@ -119,6 +124,7 @@ to setup
     set label-color black
     move-to one-of staff-patches         ; Posicion
     set location one-of nodes-here
+    set initial-location location
 
     set path []
     set delay 0
@@ -191,69 +197,72 @@ to go
 
 
   if remainder ticks (INTERVALO-CLIENTES * 60) = 0 [        ; Creación del cliente
-    ask one-of entrada-patches [
-      let pos-table 0
-      let poschef 0
+    let current-clients (count clients)
+    if current-clients < max-clients [
+      ask one-of entrada-patches [
+        let pos-table 0
+        let poschef 0
 
-      ask one-of mesas-patches [
-        set pos-table one-of nodes-here
+        ask one-of mesas-patches with [not any? clients-here] [
+          set pos-table one-of nodes-here
 
-        let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
-        ask w [                              ; Agente mesero (w)
-          set orders orders + 1
-          set label orders
-          set label-color black
-          let time-chef 0
+          let w first sort-by [[a b] -> [ orders ] of a < [ orders ] of b ] waiters
+          ask w [                              ; Agente mesero (w)
+            set orders orders + 1
+            set label orders
+            set label-color black
+            let time-chef 0
 
-          let c first sort-by [[a b] -> [ working-time ] of a < [ working-time ] of b ] chefs
-          ask c [                             ; Agente chef (c)
-            set poschef one-of nodes-here
-            set working-time working-time + food-time
+            let c first sort-by [[a b] -> [ working-time ] of a < [ working-time ] of b ] chefs
+            ask c [                             ; Agente chef (c)
+              set poschef one-of nodes-here
+              set working-time working-time + food-time
 
-            set pos-clients lput pos-table pos-clients
-            set time-clients lput food-time time-clients
+              set pos-clients lput pos-table pos-clients
+              set time-clients lput food-time time-clients
+            ]
+            set path lput waiter-area path
+            (foreach range (2 * 60) [ set path lput pos-table path])
+            set path lput waiter-area path
+            (foreach range 30 [set path lput poschef path])
+            set path lput waiter-area path
+
+            output-print (word "Mesero tomando la orden del cliente en (" xcor " " ycor ")")
           ]
-          set path lput waiter-area path
-          set path lput pos-table path
-          set path lput waiter-area path
-          set path lput poschef path
-          set path lput waiter-area path
-
-          output-print (word "Mesero tomando la orden del cliente en (" xcor " " ycor ")")
         ]
-      ]
-      sprout-clients 1                     ; Agente cliente
-      [
-        set quantity (random 3) + 1
-        if quantity = 1                    ; Cliente individual
-        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera) * 60
-          set shape "client-icon"
+        sprout-clients 1                     ; Agente cliente
+        [
+          set quantity (random 3) + 1
+          if quantity = 1                    ; Cliente individual
+          [ set waiting-threshold ((random 5) + Umbral-tiempo-espera) * 60
+            set shape "client-icon"
+          ]
+          if quantity = 2                    ; Cliente pareja
+          [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.2) * 60
+            set shape "client-icon2"
+          ]
+          if quantity = 3                    ; Cliente familiar
+          [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.4) * 60
+            set shape "client-icon3"
+          ]
+          set time 0                         ; Iniciales
+          set color lime
+          set size 2
+          set label-color black              ; Label
+                                             ; move-to pos-table                   ; Posición
+
+          set location one-of nodes-here
+
+          set chef-id poschef
+          set food-ready false
+          set is-waiting false
+          set is-done false
+          set assigned-table pos-table
+
+          set entry-point location
+
+          output-print (word "Llegó un cliente en (" xcor " " ycor ").")
         ]
-        if quantity = 2                    ; Cliente pareja
-        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.2) * 60
-          set shape "client-icon2"
-        ]
-        if quantity = 3                    ; Cliente familiar
-        [ set waiting-threshold ((random 5) + Umbral-tiempo-espera * 1.4) * 60
-          set shape "client-icon3"
-        ]
-        set time 0                         ; Iniciales
-        set color lime
-        set size 2
-        set label-color black              ; Label
-        ; move-to pos-table                   ; Posición
-
-        set location one-of nodes-here
-
-        set chef-id poschef
-        set food-ready false
-        set is-waiting false
-        set is-done false
-        set assigned-table pos-table
-
-        set entry-point location
-
-        output-print (word "Llegó un cliente en (" xcor " " ycor ").")
       ]
     ]
   ]
@@ -314,6 +323,7 @@ to go
       if [patch-here] of location = [patch-here] of destination [
         set path remove-item 0 path
         if [patch-here] of location = [patch-here] of client-id [
+          set client-id initial-location
           ; PARCHE TEMPORAL
           ; TODO: Revisar la causa de que el siguiente output-print se esté ejecutando múltiples veces.
           ; output-print (word "Mesero en (" xcor " " ycor ") está llevando la orden.")
@@ -412,6 +422,7 @@ to go
           set path lput poschef path
           set path lput waiter-area path
           set path lput posclient path
+          set path lput waiter-area path
         ]
         set time-clients remove-item 0 time-clients
         set pos-clients remove-item 0 pos-clients
@@ -611,7 +622,7 @@ INPUTBOX
 139
 193
 Meseros
-15.0
+4.0
 1
 0
 Number
@@ -622,31 +633,31 @@ INPUTBOX
 235
 193
 Cocineros
-8.0
+3.0
 1
 0
 Number
 
 SLIDER
-1180
-59
-1213
-261
+433
+43
+466
+245
 Intervalo-Clientes
 Intervalo-Clientes
-0
+1
 60
-11.0
+1.0
 5
 1
 min
 VERTICAL
 
 BUTTON
-423
-60
-508
-132
+492
+57
+577
+129
 Inicializar
 setup
 NIL
@@ -660,10 +671,10 @@ NIL
 1
 
 BUTTON
-425
-138
-509
-206
+493
+135
+577
+203
 Simular
 go
 T
@@ -677,10 +688,10 @@ NIL
 1
 
 MONITOR
-516
-60
-716
-105
+584
+57
+784
+102
 Tiempo promedio de espera (min)
 get-waiting-time
 5
@@ -721,10 +732,10 @@ get-seconds
 11
 
 MONITOR
-728
-61
-869
-106
+797
+58
+938
+103
 Clientes satisfechos
 happy-clients
 0
@@ -732,10 +743,10 @@ happy-clients
 11
 
 MONITOR
-879
-60
-1019
-105
+948
+57
+1088
+102
 Clientes no satisfechos
 unhappy-clients
 17
@@ -758,10 +769,10 @@ min
 HORIZONTAL
 
 MONITOR
-1031
-60
-1170
-105
+1099
+57
+1238
+102
 % Clientes satisfechos
 get-satisfaction
 2
@@ -788,7 +799,7 @@ Umbral-tiempo-espera
 Umbral-tiempo-espera
 0
 100
-70.0
+38.0
 2
 1
 min
@@ -803,17 +814,17 @@ Tiempo-preparacion
 Tiempo-preparacion
 0
 100
-24.0
+34.0
 2
 1
 min
 HORIZONTAL
 
 PLOT
-515
-111
-866
-261
+583
+108
+934
+258
 Histograma del tiempo de espera
 NIL
 NIL
@@ -828,10 +839,10 @@ PENS
 "PenTiempo" 1.0 1 -7500403 true "" ""
 
 PLOT
-876
-111
-1169
-261
+944
+108
+1237
+258
 Cantidad clientes
 NIL
 NIL
@@ -856,20 +867,20 @@ Parámetros iniciales
 1
 
 TEXTBOX
-423
-16
-573
-51
+492
+13
+642
+48
 Ejecutar \nsimulación
 14
 0.0
 1
 
 TEXTBOX
-516
-17
-666
-35
+584
+14
+734
+32
 Métricas de evaluación
 14
 0.0
