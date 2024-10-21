@@ -645,16 +645,7 @@ to load-locally
 end
 
 to-report parse-map-info [mapStr]
-  let result []
-  let lst read-from-string mapStr
-
-  let i 0
-  while [i < length lst] [
-    set result lput (sentence item i lst item (i + 1) lst item (i + 2) lst) result
-    set i i + 3
-  ]
-
-  report result
+  report read-from-string mapStr
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
