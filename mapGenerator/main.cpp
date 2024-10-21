@@ -51,7 +51,7 @@ std::pair<std::vector<std::vector<TileInfo>>, bool> loadMap(const std::string& p
 
     if (!file.fail()) {
         success = true;
-        std::cout << "Parsing file: " << path << "\n";
+        std::cout << "Parsing file: " << path << "\n=============================\n";
 
         int w, h, t;
         bool firstLine = false;
@@ -87,25 +87,16 @@ std::pair<std::vector<std::vector<TileInfo>>, bool> loadMap(const std::string& p
 }
 
 void saveMap(const std::string& path, std::vector<std::vector<TileInfo>> map) {
-    std::cout << "Saving at: " << path << '\n';
     std::ofstream file(path);
 
     if (!file.fail()) {
         file << '[';
-        /*
-        // Add a few black colored layers to make room for the images in the NetLogo interface (Deprecated feature!)
-        for (int i = 15; i > 12; i--) {
-            for (int j = -12; j < 12; j++) {
-                file << ' ' << j << ' ' << i << ' ' << 0;
-            }
-        }
-        */
         // Store map info in groups of 3: x, y, color
         for (const auto& row : map)
             for (const auto& patch : row)
-                file << ' ' << patch.x << ' ' << patch.y << ' ' << patch.color;
+                file << " [" << patch.x << ' ' << patch.y << ' ' << patch.color << ']';
         file << ']';
-        std::cout << "NetLogo-readable generated at: " << path << '\n';
+        std::cout << "NetLogo-readable generated at: " << path << "\n\n";
     }
     else
         std::cout << "An error has ocurred while saving the file.\n";
@@ -114,36 +105,23 @@ void saveMap(const std::string& path, std::vector<std::vector<TileInfo>> map) {
 
 // Splits a file name into its main components: name and extension
 std::pair<std::string, std::string> splitFileName(const std::string& filename) {
-    std::string name;
-    std::string extension;
-
     std::size_t i = filename.rfind('.', filename.length());
-
-    if (i != std::string::npos) {
-        name = filename.substr(0, i);
-        extension = filename.substr(i + 1, filename.length() - 1);
-        return { name, extension };
-    }
-
-    name = filename;
-    extension = "";
+    
+    if (i == std::string::npos) return { filename, "" };
+    
+    std::string name = filename.substr(0, i);
+    std::string extension = filename.substr(i + 1, filename.length() - 1);
     return { name, extension };
 }
 
 // Splits a file path into two components: absolute path and filename (extension included. See "splitFileName" for further information)
 std::pair<std::string, std::pair<std::string, std::string>> splitPath(const std::string& path) {
-    std::string absolutePath;
-    std::string filename;
-    
     std::size_t i = path.rfind('\\', path.length());
     
-    if (i != std::string::npos) {
-        absolutePath = path.substr(0, i);
-        filename = path.substr(i + 1, path.length() - 1);
-        return { absolutePath, splitFileName(filename) };
-    }
-    absolutePath = "";
-    filename = path;
+    if (i == std::string::npos) return { "", splitFileName(path) };
+    
+    std::string absolutePath = path.substr(0, i);
+    std::string filename = path.substr(i + 1, path.length() - 1);
     
     return { absolutePath, splitFileName(filename) };
 }
@@ -152,42 +130,34 @@ std::pair<std::string, std::pair<std::string, std::string>> splitPath(const std:
     This program executes with the following parameters:
         - Executable path
         - File(s) to convert (optional)
-    
-    NOTE: As of now, it is advised to put the desired files to convert into the same location as the executable.
 */
 int main(int argc, char* argv[]) {
     if (argc > 1)
         for (int i = 1; i < argc; i++) {
             std::string inputFilePath = argv[i];
-            auto pathInfo = splitPath(inputFilePath);
-            std::string absolutePath = pathInfo.first;
-            std::string filename = pathInfo.second.first;
-            std::string extension = pathInfo.second.second;
-
-            std::vector<std::vector<TileInfo>> map;
-            bool successRead;
 
             auto mapInfo = loadMap(inputFilePath);
-            map = mapInfo.first;
-            successRead = mapInfo.second;
-                
-            if (successRead) {
-                std::cout << "Map size: (" << map.size() << ", " << map[0].size() << ")\n";
-                for (const auto& row : map) {
-                    for (const auto& patch : row)
-                        std::cout << patch << ' ';
-                    std::cout << '\n';
-                }
+            std::vector<std::vector<TileInfo>> map = mapInfo.first;
+            bool successRead = mapInfo.second;
 
-                std::string outputPath = absolutePath + "\\generated\\MAS4CHICKEN_" + filename + ".txt";
-                saveMap(outputPath, map);
+            if (!successRead) {
+                std::cout << "An error occurred while reading this file. No output has been generated." << std::endl;
+                continue;
             }
-            else
-                std::cout << "No file has been created.\n";
+
+            std::cout << "Map size: (" << map.size() << ", " << map[0].size() << ")\n";
+            for (const auto& row : map) {
+                for (const auto& patch : row)
+                    std::cout << patch << ' ';
+                std::cout << '\n';
+            }
+
+            std::string fileName = splitPath(inputFilePath).second.first;
+            std::string outputPath = "..\\generated\\MAS4CHICKEN_" + fileName + ".txt";
+            saveMap(outputPath, map);
         }
     else
-        std::cout << "Drag a txt file to this executable in order to initialize the conversion.\n";
-    
+        std::cout << "Drag a txt file to this executable in order to initialize the conversion." << std::endl;
     std::cout << "Press enter to exit.\n";
     std::cin.get();
 
