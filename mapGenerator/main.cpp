@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
             }
 
             std::string fileName = splitPath(inputFilePath).second.first;
-            std::string outputPath = "..\\generated\\MAS4CHICKEN_" + fileName + ".txt";
+            std::string outputPath = ".\\generated\\MAS4CHICKEN_" + fileName + ".txt";
             saveMap(outputPath, map);
         }
     else

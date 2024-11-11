@@ -638,8 +638,8 @@ Intervalo-Clientes
 Intervalo-Clientes
 1
 60
-1.0
-5
+6.0
+1
 1
 min
 VERTICAL
@@ -920,7 +920,7 @@ INPUTBOX
 261
 101
 Recurso-URL
-NIL
+https://raw.githubusercontent.com/u201922331/MAS4CHICKEN/refs/heads/main/mapGenerator/generated/MAS4CHICKEN_map0%20-%20A%20FUEGO%20LENTO.txt
 1
 0
 String
