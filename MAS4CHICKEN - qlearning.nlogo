@@ -75,7 +75,7 @@ end
 to setup
   ;clear-all
 
-  set-current-plot "Ave Reward Per Episode"
+  set-current-plot "Recompensa promedio por episodio"
   set-plot-y-range -10 10
 
   ask patches [set reward -1]
@@ -139,8 +139,8 @@ to setup
     qlearningextension:discount-factor 0.75
 
     ; used to create the plot
-    create-temporary-plot-pen (word who)
-    set-plot-pen-color color
+    ;create-temporary-plot-pen "pen1"
+    ;set-plot-pen-color color
     set reward-list []
   ]
   set iteracion 0
@@ -160,7 +160,7 @@ to go
   ask chefs [die]
   ask clients [die]
 
-  clear-plot
+  ;clear-plot
   ; Validar parámetros iniciales
   if MESEROS < 1 [
     user-message (word "El número de meseros es menor al límite permitido de 1, por lo que será ajustado automáticamente a un mínimo de 1 mesero.")
@@ -550,8 +550,9 @@ to resetEpisode
     ]
     let avg-rew rew-sum / length-rew
 
-    ;set-current-plot-pen (word who)
-    ;plot avg-rew
+    set-current-plot "Recompensa promedio por episodio"
+    set-current-plot-pen "pen1"
+    plot avg-rew
 
     set reward-list []
   ]
@@ -681,7 +682,7 @@ INPUTBOX
 139
 193
 Meseros
-2.0
+4.0
 1
 0
 Number
@@ -692,7 +693,7 @@ INPUTBOX
 235
 193
 Cocineros
-2.0
+3.0
 1
 0
 Number
@@ -706,7 +707,7 @@ Intervalo-Clientes
 Intervalo-Clientes
 0
 30
-10.0
+5.0
 1
 1
 min
@@ -821,7 +822,7 @@ Intervalo-Pausa
 Intervalo-Pausa
 0
 60
-10.0
+15.0
 5
 1
 min
@@ -845,7 +846,7 @@ SWITCH
 233
 Feriado-Fin-de-Semana
 Feriado-Fin-de-Semana
-0
+1
 1
 -1000
 
@@ -858,7 +859,7 @@ Tiempo-espera-real
 Tiempo-espera-real
 0
 60
-14.0
+38.0
 1
 1
 min
@@ -873,7 +874,7 @@ Tiempo-preparacion
 Tiempo-preparacion
 0
 100
-10.0
+34.0
 2
 1
 min
@@ -1043,7 +1044,7 @@ PLOT
 57
 1435
 207
-Ave Reward Per Episode
+Recompensa promedio por episodio
 NIL
 NIL
 0.0
@@ -1054,27 +1055,28 @@ true
 false
 "" ""
 PENS
+"pen1" 1.0 0 -16777216 true "" ""
 
 SLIDER
-245
-276
-417
-309
+257
+273
+429
+306
 Meseros-optimo
 Meseros-optimo
 0
 10
-2.0
+4.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-482
-272
-654
-305
+437
+273
+609
+306
 Cocineros-optimo
 Cocineros-optimo
 0
@@ -1095,6 +1097,16 @@ get-iteracion
 17
 1
 11
+
+TEXTBOX
+262
+249
+412
+267
+Parámetros óptimos
+14
+0.0
+1
 
 @#$#@#$#@
 ## ¿QUÉ ES?
